@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<ul>
+    {% for user in users %}
+    <li>{{user[1]}} - {{user[2]}}</li>
+    <form action="deregister" method="POST">
+        <input type="hidden" name="id" value="{{ user[0] }}">
+        <input type="submit" value="Deregister">
+    {% endfor %}
+</ul>
+
+{% endblock %}
