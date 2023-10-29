@@ -1,5 +1,5 @@
-#Starter code from sprts+registrants example
-#Github CoPilot was used for parts while writing the below code
+#Starter code from sports_registrants example
+#Github CoPilot was used for small parts while writing the below code
 
 import re
 from flask import Flask, render_template, request, redirect
@@ -17,7 +17,8 @@ mysql = MySQL(app)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    errors = {}
+    return render_template('index.html', errors=errors)
 
 
 @app.route('/register', methods=['POST'])
@@ -28,30 +29,35 @@ def register():
     phone = request.form.get('phone')
     password = request.form.get('password')
 
+    errors = {}
+
     if not name:
-        return render_template('error.html', message="Missing name")
+        errors['name'] = "Missing name"
     if not email:
-        return render_template('error.html', message="Missing email")
+        errors['email'] = "Missing email"
     if not phone:
-        return render_template('error.html', message="Missing phone")
+        errors['phone'] = "Missing phone"
     if not password:
-        return render_template('error.html', message="Missing password")
+        errors['password'] = "Missing password"
     
     # Email validation
     if not re.match(r"[^@]+@[^@]+\.com$", email):
-        return render_template('error.html', message="Invalid email format")
+        errors['email'] = "Invalid email format"
     
     # Phone validation
     if not phone.isdigit():
-        return render_template('error.html', message="Phone number must contain only digits")
+        errors['phone'] = "Phone number must contain only digits"
     
     # Password validation
     if len(password) < 8:
-        return render_template('error.html', message="Password must be at least 8 characters long")
+        errors['password'] = "Password must be at least 8 characters long"
     if not re.search("[A-Z]", password):
-        return render_template('error.html', message="Password must contain at least one capital letter")
+        errors['password'] = "Password must contain at least one capital letter"
     if not re.search("[@#$%^&+=]", password):
-        return render_template('error.html', message="Password must contain at least one special character")
+        errors['password'] = "Password must contain at least one special character"
+    
+    if errors:
+        return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)
     
     cursor = mysql.connection.cursor()
     cursor.execute("Select UserID from users where Email = %s", 
@@ -59,13 +65,13 @@ def register():
     result = cursor.fetchall()
     if len(result) != 0:
         cursor.close()
-        return render_template('error.html', message="You have already registered")  
+        errors['email'] = "You have already registered"
+        return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)  
     cursor.execute("INSERT INTO users (Name, Email, Phone, Password) VALUES (%s, %s, %s, %s)", 
                    (name, email, phone, password)) 
     mysql.connection.commit()
     cursor.close() 
     return redirect('/registrants')
-
 
 @app.route('/registrants')
 def registrants():
@@ -75,13 +81,29 @@ def registrants():
     cursor.close()
     return render_template('registrants.html', users=users)
 
+@app.route('/login')
+def login():
+    # Render the login page template
+    return render_template('login.html')
 
-@app.route('/deregister', methods=['POST'])
-def deregister():
-    id = request.form.get('id')
-    if id:
-        cursor = mysql.connection.cursor()
-        cursor.execute("DELETE FROM users WHERE id = %s", (id))
-        mysql.connection.commit()
-        cursor.close()
-    return redirect('/registrants')
+@app.route('/login', methods=['POST'])
+def login_post():
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE Email = %s AND Password = %s", (email, password))
+    user = cursor.fetchone()
+    cursor.close()
+
+    if user:
+        return redirect('/success', error="")
+    else:
+            # Invalid credentials, show error message
+        error = "Invalid email or password"
+        return render_template('login.html', error=error)
+    
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
