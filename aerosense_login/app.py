@@ -71,15 +71,7 @@ def register():
                    (name, email, phone, password)) 
     mysql.connection.commit()
     cursor.close() 
-    return redirect('/registrants')
-
-@app.route('/registrants')
-def registrants():
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM users")
-    users = cursor.fetchall()
-    cursor.close()
-    return render_template('registrants.html', users=users)
+    return redirect('/success')
 
 @app.route('/login')
 def login():
