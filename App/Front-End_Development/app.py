@@ -31,6 +31,7 @@ def register_method():
     name = request.form.get('name')
     email = request.form.get('email')
     password = request.form.get('password')
+    confirm = request.form.get('confirm')
 
     errors = {}
 
@@ -40,6 +41,8 @@ def register_method():
         errors['email'] = "Missing email"
     if not password:
         errors['password'] = "Missing password"
+    if not confirm:
+        errors['confirm'] = "Missing confirm password"
     
     # Email validation
     if not re.match(r"[^@]+@[^@]+\.com$", email):
@@ -50,11 +53,17 @@ def register_method():
         errors['password'] = "Password must be at least 8 characters long"
     if not re.search("[A-Z]", password):
         errors['password'] = "Password must contain at least one capital letter"
-    if not re.search("[@#$%^&+=]", password):
+    if not re.search("[@!#$%^&+=]", password):
         errors['password'] = "Password must contain at least one special character"
+    if not re.search("[0-9]", password):
+        errors['password'] = "Password must contain at least one number"
+
+    # Confirm password validation
+    if password != confirm:
+        errors['confirm'] = "Passwords do not match"
     
     if errors:
-        return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)
+        return render_template('index.html', errors=errors, name=name, email=email, password=password, confirm=confirm)
     
     cursor = mysql.connection.cursor()
     cursor.execute("Select UserID from User where Email = %s", 
@@ -63,7 +72,7 @@ def register_method():
     if len(result) != 0:
         cursor.close()
         errors['email'] = "You have already registered"
-        return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)  
+        return render_template('index.html', errors=errors, name=name, email=email, password=password, confirm=confirm)  
     cursor.execute("INSERT INTO User (Name, Email, Password) VALUES (%s, %s, %s)", 
                    (name, email, password)) 
     mysql.connection.commit()
