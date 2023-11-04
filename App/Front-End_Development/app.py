@@ -20,13 +20,16 @@ def index():
     errors = {}
     return render_template('login.html', errors=errors)
 
-
-@app.route('/register', methods=['POST'])
+@app.route('/register')
 def register():
+    # Render the register page template
+    return render_template('index.html')
+
+@app.route('/register', methods=['POST', 'GET'])
+def register_method():
     #Server side validation
     name = request.form.get('name')
     email = request.form.get('email')
-    phone = request.form.get('phone')
     password = request.form.get('password')
 
     errors = {}
@@ -35,18 +38,12 @@ def register():
         errors['name'] = "Missing name"
     if not email:
         errors['email'] = "Missing email"
-    if not phone:
-        errors['phone'] = "Missing phone"
     if not password:
         errors['password'] = "Missing password"
     
     # Email validation
     if not re.match(r"[^@]+@[^@]+\.com$", email):
         errors['email'] = "Invalid email format"
-    
-    # Phone validation
-    if not phone.isdigit():
-        errors['phone'] = "Phone number must contain only digits"
     
     # Password validation
     if len(password) < 8:
@@ -60,15 +57,15 @@ def register():
         return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)
     
     cursor = mysql.connection.cursor()
-    cursor.execute("Select UserID from users where Email = %s", 
+    cursor.execute("Select UserID from User where Email = %s", 
                    (email,))
     result = cursor.fetchall()
     if len(result) != 0:
         cursor.close()
         errors['email'] = "You have already registered"
         return render_template('index.html', errors=errors, name=name, email=email, phone=phone, password=password)  
-    cursor.execute("INSERT INTO users (Name, Email, Phone, Password) VALUES (%s, %s, %s, %s)", 
-                   (name, email, phone, password)) 
+    cursor.execute("INSERT INTO User (Name, Email, Password) VALUES (%s, %s, %s)", 
+                   (name, email, password)) 
     mysql.connection.commit()
     cursor.close() 
     return redirect('/success')
@@ -84,7 +81,7 @@ def login_post():
     password = request.form.get('password')
 
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM users WHERE Email = %s AND Password = %s", (email, password))
+    cursor.execute("SELECT * FROM User WHERE Email = %s AND Password = %s", (email, password))
     user = cursor.fetchone()
     cursor.close()
 
