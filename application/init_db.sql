@@ -1,6 +1,6 @@
-CREATE DATABASE AirQualityMonitor;
+CREATE DATABASE aerosense;
 
-USE AirQualityMonitor;
+USE aerosense;
 
 CREATE TABLE User (
     userID INT PRIMARY KEY AUTO_INCREMENT,
@@ -43,3 +43,6 @@ CREATE TABLE Notification (
     timestamp DATETIME,
     FOREIGN KEY (measurementID) REFERENCES AirQualityMeasurement(measurementID)
 );
+
+
+INSERT INTO Wristband (model, batteryLevel) VALUES ('ModelX', 100);
