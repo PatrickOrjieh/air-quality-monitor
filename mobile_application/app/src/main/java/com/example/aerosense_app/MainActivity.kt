@@ -14,9 +14,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.Alignment
@@ -417,6 +420,16 @@ fun Register(){
 
 @Composable
 fun dataScreen(modifier: Modifier = Modifier) {
+    var percent by remember { mutableStateOf(0) }
+    var time by remember { mutableStateOf("")}
+    var pmTwo by remember { mutableStateOf(0)}
+    var pmTen by remember { mutableStateOf(0)}
+
+    percent = 58
+    time = "12:56"
+    pmTwo = 18
+    pmTen = 42
+
     NavigationBar(modifier) {
         Box(
             modifier = Modifier
@@ -446,47 +459,7 @@ fun dataScreen(modifier: Modifier = Modifier) {
         }
     }
 
-//    Box(
-//        modifier = modifier
-//            .requiredWidth(width = 320.dp)
-//            .requiredHeight(height = 291.dp)
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .align(alignment = Alignment.TopStart)
-//                .offset(x = 13.dp,
-//                    y = 19.dp)
-//                .requiredWidth(width = 287.dp)
-//                .requiredHeight(height = 272.dp)
-//                .background(color = Color(0xfff24822))
-//                .border(border = BorderStroke(4.dp, Color(0xffc23a1b))))
-//        Box(
-//            modifier = Modifier
-//                .requiredWidth(width = 320.dp)
-//                .requiredHeight(height = 129.dp)
-//                .clip(shape = RoundedCornerShape(6.dp))
-//                .background(color = Color.White))
-//        Box(
-//            modifier = Modifier
-//                .align(alignment = Alignment.TopStart)
-//                .offset(x = 15.dp,
-//                    y = 19.dp)
-//                .requiredWidth(width = 287.dp)
-//                .requiredHeight(height = 272.dp)
-//                .clip(CircleShape)
-//                .border(border = BorderStroke(4.dp, Color(0xff1e1e1e))))
-//        Text(
-//            text = "  57% Clean",
-//            color = Color(0xff1e1e1e),
-//            lineHeight = 3.75.em,
-//            style = TextStyle(
-//                fontSize = 40.sp,
-//                fontWeight = FontWeight.Medium),
-//            modifier = Modifier
-//
-//                .align(alignment = Alignment.Center))
-//    }
-
+    //Box for the circle
     Box(
         modifier = modifier
             .requiredWidth(width = 320.dp)
@@ -512,7 +485,7 @@ fun dataScreen(modifier: Modifier = Modifier) {
         )
         Text(
             text = "57% Clean",
-            color = Color(0xff1e1e1e),
+            color = Color(0xfff24822),
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 30.sp,
@@ -523,12 +496,30 @@ fun dataScreen(modifier: Modifier = Modifier) {
         )
     }
 
-    Spacer(modifier = Modifier.height(70.dp))
+    Box() {
+        //Centered text underneath the circle box
+        Text(
+            text = "Updated: " + time,
+            color = Color(0xff1e1e1e),
+            lineHeight = 3.75.em,
+            style = TextStyle(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            modifier = Modifier
+                .align(alignment = Alignment.Center)
+                .offset(y = -50.dp)
+        )
+    }
 
+    Spacer(modifier = Modifier.height(200.dp))
+
+    //Box for the particle stats
     Box(
         modifier = modifier
             .requiredWidth(width = 534.dp)
             .requiredHeight(height = 123.dp)
+            .offset(y = 40.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.particles),
@@ -538,7 +529,7 @@ fun dataScreen(modifier: Modifier = Modifier) {
                 .align(alignment = Alignment.TopStart)
                 .offset(
                     x = 100.dp,
-                    y = 4.54547119140625.dp
+                    y = 4.5.dp
                 )
                 .requiredWidth(width = 100.dp)
                 .requiredHeight(height = 100.dp))
@@ -556,7 +547,7 @@ fun dataScreen(modifier: Modifier = Modifier) {
                     y = 15.dp
                 ))
         Text(
-            text = "18µg/m^3",
+            text = pmTwo.toString() + "µg/m^3",
             color = Color(0xffffa629),
             lineHeight = 3.75.em,
             style = TextStyle(
@@ -582,7 +573,7 @@ fun dataScreen(modifier: Modifier = Modifier) {
                     y = 63.dp
                 ))
         Text(
-            text = "42 µg/m^3",
+            text = pmTen.toString() + "µg/m^3",
             color = Color(0xffffa629),
             lineHeight = 3.75.em,
             style = TextStyle(
@@ -596,7 +587,76 @@ fun dataScreen(modifier: Modifier = Modifier) {
                 ))
     }
 
+    //Box for the gas stats
+    Box(
+        modifier = modifier
+            .requiredWidth(width = 541.dp)
+            .requiredHeight(height = 137.dp)
+            .offset(y = 180.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.gascloud),
+            contentDescription = "download 2",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .requiredWidth(width = 100.dp)
+                .requiredHeight(height = 100.dp)
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 105.dp,
+                    y = 4.5.dp))
+        Text(
+            text = "VOC Level -",
+            color = Color(0xff1e1e1e),
+            lineHeight = 3.75.em,
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium),
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 227.dp,
+                    y = 43.dp))
+        Text(
+            text = "505 ppb",
+            color = Color(0xfff24822),
+            lineHeight = 3.75.em,
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium),
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 345.dp,
+                    y = 43.dp))
+    }
 
+    //Box for location
+    Box(
+        modifier = modifier
+            .requiredWidth(width = 437.dp)
+            .requiredHeight(height = 129.dp)
+            .offset(y = 300.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.location),
+            contentDescription = "download 3",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .requiredWidth(width = 100.dp)
+                .requiredHeight(height = 100.dp)
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 50.dp,
+                    y = 4.5.dp))
+        Text(
+            text = "View Location",
+            color = Color(0xff237ec1),
+            lineHeight = 3.75.em,
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold),
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 169.dp,
+                    y = 33.45458984375.dp))
+    }
 
 }
 
