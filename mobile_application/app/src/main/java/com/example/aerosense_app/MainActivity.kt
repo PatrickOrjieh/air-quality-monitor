@@ -816,6 +816,7 @@ fun Settings(navController: NavHostController){
             .requiredWidth(width = 400.dp)
             .offset(y = -200.dp))
 
+    //Device Management
     Box(
     ) {
 
@@ -1159,11 +1160,101 @@ fun Settings(navController: NavHostController){
             .padding(top = 400.dp)
     )
 
+    //Account Settings
+    Box(
+        modifier = Modifier.padding(top = 400.dp)
+    ) {
+
+        Text(
+            text = "Account Settings",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            modifier = Modifier
+                .padding(top = 160.dp)
+                .padding(start = 5.dp)
+        )
+
+
+        Row(
+            modifier = Modifier
+                .padding(top = 190.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Change Password",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 7.dp, top = 5.dp)
+                )
+
+
+            }
+
+            Text(
+                text = "**********",
+                color = Color(0xff1e1e1e),
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier
+                    .padding(top = 5.dp)
+                    .padding(start = 20.dp)
+            )
+
+        }
+
+        Box(
+            modifier = Modifier
+                .padding(top = 245.dp)
+                .padding(start = 10.dp)
+                .requiredWidth(width = 120.dp)
+                .requiredHeight(height = 50.dp)
+                .clip(shape = RoundedCornerShape(23.59.dp))
+                .background(color = Color(0xfff24822)))
+        {
+
+            Text(
+                text = "LOGOUT",
+                textAlign = TextAlign.Center,
+                color = Color.White,
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier.padding(start = 20.dp, top = 10.dp)
+            )
+
+        }
+
+    }
+
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusesDropDown() {
+    //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
     val context = LocalContext.current
     val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
     var expanded by remember { mutableStateOf(false) }
@@ -1193,7 +1284,7 @@ fun StatusesDropDown() {
             ) {
                 statuses.forEach { item ->
                     DropdownMenuItem(
-                        text = { Text(text = item, style = TextStyle(fontSize = 10.sp)) },
+                        text = { Text(text = item) },
                         onClick = {
                             selectedText = item
                             expanded = false
