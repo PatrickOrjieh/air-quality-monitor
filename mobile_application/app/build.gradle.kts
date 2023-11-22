@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -70,12 +69,4 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation ("com.google.maps.android:maps-compose-utils:4.3.0")
-    implementation ("com.google.maps.android:maps-compose:4.3.0")
-
-    // Optionally, you can include the widgets library for ScaleBar, etc.
-    implementation ("com.google.maps.android:maps-compose-widgets:4.3.0")
-    implementation ("com.google.android.gms:play-services-maps:17.0.1")
-
-
 }

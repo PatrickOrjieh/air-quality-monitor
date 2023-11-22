@@ -1,59 +1,93 @@
 package com.example.aerosense_app
 
-import android.R
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.MenuItem
+import android.view.Surface
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -62,18 +96,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.aerosense_app.ui.theme.AeroSense_AppTheme
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.rememberCameraPositionState
-
 
 enum class Screen {
     Register,
     Login,
     DataScreen,
-    Location
+    Settings
 }
 
 class MainActivity : ComponentActivity() {
@@ -91,7 +119,7 @@ class MainActivity : ComponentActivity() {
                         composable("Login") { Login(navController) }
                         composable("Register") { Register(navController) }
                         composable("dataScreen") { dataScreen(navController) }
-                        composable("Location") { Map() }
+                        composable("Settings") { Settings(navController) }
                     }
                 }
             }
@@ -104,26 +132,6 @@ class MainActivity : ComponentActivity() {
 //fun App() {
 //    dataScreen()
 //}
-
-@Composable
-fun Map() {
-
-
-    val singapore = LatLng(1.35, 103.87)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(singapore, 10f)
-    }
-    Log.d("Map", "Map is being created")
-
-    // Use GoogleMap from com.google.maps.android.compose
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
-    )
-
-    Log.d("Map", "Map has been created")
-}
-
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -701,7 +709,7 @@ fun Map() {
 
         @Composable
         fun DropDown(navController: NavHostController) {
-            //Took some of the following code from https://alexzh.com/jetpack-compose-dropdownmenu/
+            //Parts of the following code adapted from: https://alexzh.com/jetpack-compose-dropdownmenu/
             val context = LocalContext.current
             var expanded by remember { mutableStateOf(false) }
 
@@ -728,12 +736,12 @@ fun Map() {
                 ) {
                     DropdownMenuItem(
                         text = { Text("Home") },
-                        onClick = { navController.navigate(Screen.DataScreen.name)
+                        onClick = { //Navigation
                      }
                     )
                     DropdownMenuItem(
                         text = { Text("Location") },
-                        onClick = { navController.navigate(Screen.Location.name) }
+                        onClick = { }
                     )
                     DropdownMenuItem(
                         text = { Text("History") },
@@ -741,7 +749,11 @@ fun Map() {
                     )
                     DropdownMenuItem(
                         text = { Text("Settings") },
-                        onClick = {  }
+                        onClick = { navController.navigate(Screen.Settings.name) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Sign Out") },
+                        onClick = { navController.navigate(Screen.Login.name) }
                     )
                 }
             }
@@ -777,3 +789,420 @@ fun NavBar(navController: NavHostController){
         }
     }
 }
+
+@Composable
+fun Settings(navController: NavHostController){
+    var connected by remember { mutableStateOf(false) }
+    var battery by remember { mutableIntStateOf(0) }
+    var vibration by remember { mutableStateOf(false) }
+    var sound by remember { mutableStateOf(false) }
+
+
+    NavBar(navController)
+
+    Text(
+        text = "Settings",
+        color = Color(0xff1e1e1e),
+        textAlign = TextAlign.Center,
+        style = TextStyle(
+            fontSize = 40.sp,
+            fontWeight = FontWeight.Medium),
+        modifier = Modifier.padding(top = 80.dp))
+
+    Image(
+        painter = painterResource(id = R.drawable.separator),
+        contentDescription = "Vector 38",
+        modifier = Modifier
+            .requiredWidth(width = 400.dp)
+            .offset(y = -200.dp))
+
+    Box(
+    ) {
+
+        Text(
+            text = "Device Management",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            modifier = Modifier
+                .padding(top = 160.dp)
+                .padding(start = 5.dp)
+        )
+
+        //Device connection status
+        Row(
+            modifier = Modifier
+                .padding(top = 190.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    // .offset(y = -115.dp, x = -80.dp)
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Pair Device",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 35.dp, top = 5.dp)
+                )
+
+
+            }
+
+            Text(
+                text = "Connected",
+                color = Color(0xff1e1e1e),
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier
+                    .padding(top = 5.dp)
+                    .padding(start = 20.dp)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.tick),
+                contentDescription = "check",
+                modifier = Modifier
+                    .requiredWidth(width = 45.dp)
+                    .requiredHeight(height = 45.dp)
+                    // .offset(y = 5.dp, x = 10.dp)
+                    .padding(start = 10.dp)
+            )
+
+        }
+
+        //Battery Level
+        Row(
+            modifier = Modifier
+                .padding(top = 245.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    // .offset(y = -115.dp, x = -80.dp)
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Battery Level",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 30.dp, top = 5.dp)
+                )
+
+
+            }
+
+            Text(
+                text = "$battery%",
+                color = Color(0xff1e1e1e),
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier
+                    .padding(top = 5.dp)
+                    .padding(start = 20.dp)
+            )
+
+        }
+    }
+
+        Image(
+            painter = painterResource(id = R.drawable.separator),
+            contentDescription = "Vector 38",
+            modifier = Modifier
+                .requiredWidth(width = 400.dp)
+                .offset(y = -45.dp)
+        )
+
+    Box(
+        modifier = Modifier.padding(top = 145.dp)
+    ) {
+
+        Text(
+            text = "Notification Settings",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            modifier = Modifier
+                .padding(top = 170.dp)
+                .padding(start = 5.dp)
+        )
+
+        //Device connection status
+        Row(
+            modifier = Modifier
+                .padding(top = 200.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    // .offset(y = -115.dp, x = -80.dp)
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Vibration",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 50.dp, top = 5.dp)
+                )
+
+
+            }
+
+            //radio buttons
+            Box(
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .selectableGroup()
+            ) {
+                RadioButton(
+                    selected = sound,
+                    onClick = { sound = true },
+                    modifier = Modifier
+                )
+                Text(
+                    text = "ON",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .padding(start = 40.dp)
+                        .padding(top = 10.dp))
+
+                RadioButton(
+                    selected = !sound,
+                    onClick = { sound = false },
+                    modifier = Modifier
+                        .padding(start = 70.dp))
+
+                Text(
+                    text = "OFF",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .padding(start = 110.dp)
+                        .padding(top = 10.dp))
+
+            }
+
+        }
+
+        //Battery Level
+        Row(
+            modifier = Modifier
+                .padding(top = 255.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    // .offset(y = -115.dp, x = -80.dp)
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Sound",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 60.dp, top = 5.dp)
+                )
+
+
+            }
+
+            //radio buttons
+            Box(
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .selectableGroup()
+            ) {
+                RadioButton(
+                    selected = vibration,
+                    onClick = { vibration = true },
+                    modifier = Modifier
+                        )
+                Text(
+                    text = "ON",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .padding(start = 40.dp)
+                        .padding(top = 10.dp))
+
+                RadioButton(
+                    selected = !vibration,
+                    onClick = { vibration = false },
+                    modifier = Modifier
+                        .padding(start = 70.dp))
+
+                Text(
+                    text = "OFF",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium),
+                    modifier = Modifier
+                        .padding(start = 110.dp)
+                        .padding(top = 10.dp))
+
+            }
+        }
+
+        //Battery Level
+        Row(
+            modifier = Modifier
+                .padding(top = 300.dp)
+                .padding(start = 5.dp)
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .requiredWidth(width = 180.dp)
+                    .requiredHeight(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(6.dp))
+                    .background(color = Color.White)
+                    .border(
+                        border = BorderStroke(4.dp, Color.LightGray),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+            ) {
+
+                Text(
+                    text = "Frequency",
+                    textAlign = TextAlign.Center,
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(start = 40.dp, top = 5.dp)
+                )
+
+
+            }
+
+            StatusesDropDown()
+
+        }
+
+        }
+
+    Image(
+        painter = painterResource(id = R.drawable.separator),
+        contentDescription = "Vector 38",
+        modifier = Modifier
+            .requiredWidth(width = 400.dp)
+            .padding(top = 400.dp)
+    )
+
+    }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StatusesDropDown() {
+    val context = LocalContext.current
+    val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(statuses[0]) }
+
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+            TextField(
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                statuses.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(text = item, style = TextStyle(fontSize = 10.sp)) },
+                        onClick = {
+                            selectedText = item
+                            expanded = false
+                            Toast.makeText(context, item, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
