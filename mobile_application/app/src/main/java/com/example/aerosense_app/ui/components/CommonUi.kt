@@ -64,7 +64,7 @@ fun DropDown(navController: NavHostController) {
             )
             DropdownMenuItem(
                 text = { Text("Location") },
-                onClick = { }
+                onClick = { navController.navigate(Screen.Location.name) }
             )
             DropdownMenuItem(
                 text = { Text("History") },

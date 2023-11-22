@@ -506,6 +506,7 @@ fun Settings(navController: NavHostController){
 
 }
 
+//Have to opt in for Experimental Material 3 API in order to use TextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusesDropDown() {
