@@ -452,6 +452,9 @@ fun Settings(navController: NavHostController){
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.padding(start = 7.dp, top = 5.dp)
+                        .clickable{
+                            navController.navigate(Screen.ResetPassword.name)
+                        }
                 )
 
 
