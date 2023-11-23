@@ -1,6 +1,10 @@
+//Parts of code taken from: https://github.com/mitchtabian/Google-Maps-Compose
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id ("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id ("dagger.hilt.android.plugin")
+    kotlin("kapt")
 }
 
 android {
@@ -30,11 +34,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -69,4 +73,25 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Need this or MapEffect throws exception.
+    implementation ("androidx.appcompat:appcompat:1.5.1")
+
+    // Google maps
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    // Google maps for compose
+    implementation ("com.google.maps.android:maps-compose:2.8.0")
+
+    // KTX for the Maps SDK for Android
+    implementation ("com.google.maps.android:maps-ktx:3.2.1")
+    // KTX for the Maps SDK for Android Utility Library
+    implementation ("com.google.maps.android:maps-utils-ktx:3.2.1")
+
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0")
+
+    // Hilt
+    implementation ("com.google.dagger:hilt-android:2.42")
+    kapt ("com.google.dagger:hilt-compiler:2.42")
+
 }
