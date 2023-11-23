@@ -1,6 +1,16 @@
 import bme680
 import time
 import RPi.GPIO as GPIO
+from pubnub.callbacks import SubscribeCallback
+from pubnub.pubnub import PubNub
+from pubnub.pnconfiguration import PNConfiguration
+
+# PubNub Configuration
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = "sub-c-99b5aad1-e3dc-4da2-b803-025cbbd38a4b"
+pnconfig.publish_key = "pub-c-b1e88fca-2434-4496-a87b-cfcf8faff5f7"
+pnconfig.user_id = "aerosense-modelx-pi"
+pubnub = PubNub(pnconfig)
 
 # GPIO setup
 LED_PIN = 16
@@ -23,7 +33,7 @@ sensor.select_gas_heater_profile(0)
 # Thresholds
 TEMP_THRESHOLD = 30
 HUMIDITY_THRESHOLD = 57
-GAS_RESISTANCE_BASELINE = 10000
+GAS_RESISTANCE_BASELINE = 10000  # Change as per your baseline
 
 def beep(repeat):
     for _ in range(repeat):
@@ -35,7 +45,6 @@ def beep(repeat):
         time.sleep(0.02)
 
 def trigger_alert():
-
     beep(5)
     # Blink LED 5 times
     for _ in range(5):
@@ -44,16 +53,23 @@ def trigger_alert():
         GPIO.output(LED_PIN, GPIO.LOW)
         time.sleep(0.5)
 
-def check_air_quality(temperature, humidity, gas_resistance):
+def check_air_quality(temp, humid, gas_res):
     # Calculate VOC approximation
-    voc_level = GAS_RESISTANCE_BASELINE / gas_resistance
+    voc_level = GAS_RESISTANCE_BASELINE / gas_res
     poor_quality = False
 
     # Check if any parameter is beyond the threshold
-    if temperature > TEMP_THRESHOLD or humidity > HUMIDITY_THRESHOLD or voc_level > 1:
+    if temp > TEMP_THRESHOLD or humid > HUMIDITY_THRESHOLD or voc_level > 1:
         poor_quality = True
 
     return poor_quality
+
+def my_publish_callback(envelope, status):
+    # Handle publish response
+    if not status.is_error():
+        print("Message published successfully")
+    else:
+        print("Error in publishing message")
 
 try:
     while True:
@@ -61,13 +77,25 @@ try:
             temp = sensor.data.temperature
             humid = sensor.data.humidity
             gas_res = sensor.data.gas_resistance
+            voc_level = GAS_RESISTANCE_BASELINE / gas_res
+
+            # Construct the payload
+            data = {
+                'temperature': temp,
+                'humidity': humid,
+                'voc': voc_level,
+                'gas_resistance': gas_res
+            }
 
             if check_air_quality(temp, humid, gas_res):
-                print(f"Temperature: {temp} C, Humidity: {humid} %, Gas Resistance: {gas_res} Ohms")
                 print("Poor air quality detected!")
+                print(f"Data: {data}")
                 trigger_alert()
+                # Publish to PubNub
+                pubnub.publish().channel('aerosense_channel').message(data).pn_async(my_publish_callback)
 
         time.sleep(1)
 
 except KeyboardInterrupt:
     GPIO.cleanup()
+    pubnub.stop()
