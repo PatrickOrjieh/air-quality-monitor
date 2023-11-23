@@ -43,6 +43,8 @@ import com.example.aerosense_app.Screen
 fun ResetPassword(navController: NavHostController) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var isError by remember { mutableStateOf(false) }
 
     Image(painterResource(id = R.drawable.leftarrow),
         contentDescription = "leftArrow",
@@ -97,23 +99,58 @@ fun ResetPassword(navController: NavHostController) {
 
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                // Perform email validation
+                if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
+                {
+                    error = null // No error
+                    isError = false
+                } else {
+                    isError = true
+                }
+            },
             modifier = Modifier
                 .weight(1f), // Take remaining space in the Row
             label = { Text("Email") }
         )
     }
 
+    // Error text
+    Text(
+        text = error ?: "",
+        style = TextStyle(
+            color = Color.Red,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        modifier = Modifier
+            .padding(start = 16.dp, top = 415.dp)
+    )
+
 
     Row(
         horizontalArrangement = Arrangement.End,
-        modifier = Modifier.offset(y = 415.dp)
+        modifier = Modifier.offset(y = 445.dp)
     ) {
 
         Button(
             onClick = {
-                Toast.makeText(context, "Email Sent", Toast.LENGTH_SHORT).show()
-                navController.navigate(Screen.Login.name)
+
+                val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+                if(isError) {
+                    error = "Invalid login details"
+                }
+
+                if (error == null && enteredEmail) {
+                    Toast.makeText(context, "Email Sent", Toast.LENGTH_SHORT).show()
+                    navController.navigate(Screen.Login.name)
+                }
+                else{
+                    error = "Invalid email format"
+                }
+
             },
             modifier = Modifier
                 .height(53.dp)

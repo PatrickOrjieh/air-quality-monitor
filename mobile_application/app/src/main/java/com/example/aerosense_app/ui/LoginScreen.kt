@@ -204,8 +204,8 @@ fun Login(navController: NavHostController) {
                 Button(
                     onClick = {
 
-                        val enteredEmail = email.isNotEmpty()
-                        val enteredPassword = password.isNotEmpty()
+                        val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val enteredPassword = password.isNotEmpty() && password.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))
 
                         if(isError) {
                             loginError = "Invalid login details"
@@ -213,6 +213,9 @@ fun Login(navController: NavHostController) {
 
                         if (loginError == null && enteredEmail && enteredPassword) {
                             navController.navigate(Screen.DataScreen.name)
+                        }
+                        else{
+                            loginError = "Invalid login details"
                         }
                     },
                     modifier = Modifier

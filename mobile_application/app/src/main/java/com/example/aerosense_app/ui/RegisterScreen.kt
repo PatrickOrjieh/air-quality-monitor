@@ -284,8 +284,8 @@ fun Register(navController: NavHostController) {
 
                         val enteredName = name.isNotEmpty()
                         val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-                        val enteredPassword = password.isNotEmpty()
-                        val enteredConfirm = confirm.isNotEmpty()
+                        val enteredPassword = password.isNotEmpty() && password.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))
+                        val enteredConfirm = confirm.isNotEmpty() && confirm == password
                         val enteredModelNum = modelNum.isNotEmpty()
 
                         if(isError) {
