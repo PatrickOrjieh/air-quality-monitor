@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.codingwithmitch.composegooglemaps.compose.Location
+import com.example.aerosense_app.ui.AsthmaProfile
 import com.example.aerosense_app.ui.Register
 import com.example.aerosense_app.ui.Settings
 import com.example.aerosense_app.ui.dataScreen
@@ -18,7 +19,8 @@ enum class Screen {
     Login,
     DataScreen,
     Settings,
-    Location
+    Location,
+    AsthmaProfile
 }
 
 //private val viewModel: MapViewModel by viewModels()
@@ -42,6 +44,7 @@ enum class Screen {
                 calculateZoneViewCenter = viewModel::calculateZoneLatLngBounds,
                 navController = navController
             ) }
+                    composable("AsthmaProfile"){ AsthmaProfile(navController) }
                 }
             }
 
