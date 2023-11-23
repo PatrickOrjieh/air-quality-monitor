@@ -1,6 +1,7 @@
 package com.example.aerosense_app.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredHeight
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.R
+import com.example.aerosense_app.Screen
 import com.example.aerosense_app.ui.components.NavBar
 
 @Composable
@@ -260,6 +262,9 @@ fun dataScreen(navController: NavHostController) {
                 fontWeight = FontWeight.Bold
             ),
             modifier = Modifier
+                .clickable {
+                    navController.navigate(Screen.Location.name)
+                }
                 .align(alignment = Alignment.TopStart)
                 .offset(
                     x = 169.dp,

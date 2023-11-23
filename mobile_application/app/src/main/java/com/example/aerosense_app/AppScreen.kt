@@ -39,7 +39,8 @@ enum class Screen {
                     composable("Location") { Location(
                 state = viewModel.state.value,
                 setupClusterManager = viewModel::setupClusterManager,
-                calculateZoneViewCenter = viewModel::calculateZoneLatLngBounds
+                calculateZoneViewCenter = viewModel::calculateZoneLatLngBounds,
+                navController = navController
             ) }
                 }
             }

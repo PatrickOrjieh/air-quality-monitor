@@ -45,6 +45,9 @@ fun Register(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
+    var modelNum by remember { mutableStateOf("") }
+
+
 
     Box(
         modifier = Modifier
@@ -178,12 +181,37 @@ fun Register(navController: NavHostController) {
             }
 
             Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.modelnum),
+                    contentDescription = "Model Number",
+                    modifier = Modifier.size(35.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TextField(
+                    value = modelNum,
+                    onValueChange = { modelNum = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), // Take remaining space in the Row
+                    label = { Text("Hub Model Number") },
+                    visualTransformation = PasswordVisualTransformation(),
+                )
+            }
+
+            Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.padding(start = 230.dp)
             ) {
                 Button(
                     onClick = {
-                        // Handle login button click
+                        navController.navigate(Screen.DataScreen.name)
                     },
                     modifier = Modifier
                         .height(53.dp),
@@ -193,7 +221,7 @@ fun Register(navController: NavHostController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(165.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
             //Make text for not having account and click to register
             Text(

@@ -3,14 +3,18 @@ package com.codingwithmitch.composegooglemaps.compose
 import android.content.Context
 import android.location.Location
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.codingwithmitch.composegooglemaps.clusters.ZoneClusterManager
 import com.example.aerosense_app.MapState
+import com.example.aerosense_app.ui.components.NavBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -31,7 +35,11 @@ fun Location(
     state: MapState,
     setupClusterManager: (Context, GoogleMap) -> ZoneClusterManager,
     calculateZoneViewCenter: () -> LatLngBounds,
+    navController: NavHostController
 ) {
+
+    NavBar(navController)
+
     // Set properties using MapProperties which you can use to recompose the map
     val mapProperties = MapProperties(
         // Only enable if user has accepted location permissions.
@@ -39,10 +47,11 @@ fun Location(
     )
     val cameraPositionState = rememberCameraPositionState()
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
+            .padding(top = 65.dp)
     ) {
         GoogleMap(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             properties = mapProperties,
             cameraPositionState = cameraPositionState
         ) {
