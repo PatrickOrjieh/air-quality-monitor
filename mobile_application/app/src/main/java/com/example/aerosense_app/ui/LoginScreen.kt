@@ -143,20 +143,34 @@ fun Login(navController: NavHostController) {
                 )
             }
 
-            // Login Button wrapped in a Row for right alignment
+            // Login Button wrapped in a Row
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier
-                    .padding(start = 240.dp)
                     .offset(y = -50.dp)
             ) {
+
+                Text(
+                    text = "Forgot Password?",
+                    style = TextStyle(
+                        color = Color.Blue,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 10.dp)
+                        .clickable {
+                            navController.navigate(Screen.ResetPassword.name)
+                        }
+                )
+
                 Button(
                     onClick = {
-                        // Handle login button click
                         navController.navigate(Screen.DataScreen.name)
                     },
                     modifier = Modifier
-                        .height(53.dp),
+                        .height(53.dp)
+                        .padding(start = 60.dp),
                     shape = MaterialTheme.shapes.large // Apply rounded corners
                 ) {
                     Text(text = "Log In")

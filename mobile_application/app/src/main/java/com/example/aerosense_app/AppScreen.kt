@@ -11,16 +11,18 @@ import androidx.navigation.compose.rememberNavController
 import com.codingwithmitch.composegooglemaps.compose.Location
 import com.example.aerosense_app.ui.AsthmaProfile
 import com.example.aerosense_app.ui.Register
+import com.example.aerosense_app.ui.ResetPassword
 import com.example.aerosense_app.ui.Settings
 import com.example.aerosense_app.ui.dataScreen
 
 enum class Screen {
     Register,
     Login,
+    ResetPassword,
     DataScreen,
     Settings,
     Location,
-    AsthmaProfile
+    AsthmaProfile,
 }
 
 //private val viewModel: MapViewModel by viewModels()
@@ -45,6 +47,7 @@ enum class Screen {
                 navController = navController
             ) }
                     composable("AsthmaProfile"){ AsthmaProfile(navController) }
+                    composable("ResetPassword") { ResetPassword(navController) }
                 }
             }
 
