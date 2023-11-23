@@ -4,12 +4,16 @@ import RPi.GPIO as GPIO
 from pubnub.callbacks import SubscribeCallback
 from pubnub.pubnub import PubNub
 from pubnub.pnconfiguration import PNConfiguration
+from dotenv import load_dotenv
+import os
 
-# PubNub Configuration
+load_dotenv()
+
 pnconfig = PNConfiguration()
-pnconfig.subscribe_key = "sub-c-99b5aad1-e3dc-4da2-b803-025cbbd38a4b"
-pnconfig.publish_key = "pub-c-b1e88fca-2434-4496-a87b-cfcf8faff5f7"
+pnconfig.subscribe_key = os.getenv('PUBNUB_SUBSCRIBE_KEY')
+pnconfig.publish_key = os.getenv('PUBNUB_PUBLISH_KEY')
 pnconfig.user_id = "aerosense-modelx-pi"
+pnconfig.cipher_key = os.getenv('PUBNUB_CIPHER_KEY')
 pubnub = PubNub(pnconfig)
 
 # GPIO setup
@@ -33,7 +37,7 @@ sensor.select_gas_heater_profile(0)
 # Thresholds
 TEMP_THRESHOLD = 30
 HUMIDITY_THRESHOLD = 57
-GAS_RESISTANCE_BASELINE = 10000  # Change as per your baseline
+GAS_RESISTANCE_BASELINE = 10000
 
 def beep(repeat):
     for _ in range(repeat):
@@ -46,7 +50,6 @@ def beep(repeat):
 
 def trigger_alert():
     beep(5)
-    # Blink LED 5 times
     for _ in range(5):
         GPIO.output(LED_PIN, GPIO.HIGH)
         time.sleep(0.5)
@@ -54,7 +57,7 @@ def trigger_alert():
         time.sleep(0.5)
 
 def check_air_quality(temp, humid, gas_res):
-    # Calculate VOC approximation
+    # Calculate VOC
     voc_level = GAS_RESISTANCE_BASELINE / gas_res
     poor_quality = False
 
@@ -65,7 +68,6 @@ def check_air_quality(temp, humid, gas_res):
     return poor_quality
 
 def my_publish_callback(envelope, status):
-    # Handle publish response
     if not status.is_error():
         print("Message published successfully")
     else:
