@@ -114,7 +114,7 @@ fun Login(navController: NavHostController) {
                         // Perform email validation
                         if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
                         {
-                            null // No error
+                            loginError = null // No error
                             isError = false
                         } else {
                             isError = true

@@ -50,7 +50,7 @@ fun DropDown(navController: NavHostController) {
         IconButton(onClick = { expanded = !expanded }) {
             Image(
                 painter = painterResource(id = R.drawable.hamburger),
-                contentDescription = "download 3",
+                contentDescription = "hamburger",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .requiredWidth(width = 50.dp)
@@ -71,18 +71,18 @@ fun DropDown(navController: NavHostController) {
                 text = { Text("Location") },
                 onClick = { navController.navigate(Screen.Location.name) }
             )
-            DropdownMenuItem(
-                text = { Text("History") },
-                onClick = {  }
-            )
+//            DropdownMenuItem(
+//                text = { Text("History") },
+//                onClick = {  }
+//            )
             DropdownMenuItem(
                 text = { Text("Settings") },
                 onClick = { navController.navigate(Screen.Settings.name) }
             )
-            DropdownMenuItem(
-                text = { Text("Sign Out") },
-                onClick = { navController.navigate(Screen.Login.name) }
-            )
+//            DropdownMenuItem(
+//                text = { Text("Sign Out") },
+//                onClick = { navController.navigate(Screen.Login.name) }
+//            )
         }
     }
 }
