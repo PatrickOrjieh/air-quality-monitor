@@ -1,0 +1,73 @@
+import bme680
+import time
+import RPi.GPIO as GPIO
+
+# GPIO setup
+LED_PIN = 16
+BUZZER_PIN = 24
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(LED_PIN, GPIO.OUT)
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
+# BME680 setup
+sensor = bme680.BME680(bme680.I2C_ADDR_PRIMARY)
+sensor.set_humidity_oversample(bme680.OS_2X)
+sensor.set_pressure_oversample(bme680.OS_4X)
+sensor.set_temperature_oversample(bme680.OS_8X)
+sensor.set_filter(bme680.FILTER_SIZE_3)
+sensor.set_gas_status(bme680.ENABLE_GAS_MEAS)
+sensor.set_gas_heater_temperature(320)
+sensor.set_gas_heater_duration(150)
+sensor.select_gas_heater_profile(0)
+
+# Thresholds
+TEMP_THRESHOLD = 30
+HUMIDITY_THRESHOLD = 57
+GAS_RESISTANCE_BASELINE = 10000
+
+def beep(repeat):
+    for _ in range(repeat):
+        for pulse in range(60):
+            GPIO.output(BUZZER_PIN, True)
+            time.sleep(0.001)
+            GPIO.output(BUZZER_PIN, False)
+            time.sleep(0.001)
+        time.sleep(0.02)
+
+def trigger_alert():
+
+    beep(5)
+    # Blink LED 5 times
+    for _ in range(5):
+        GPIO.output(LED_PIN, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(LED_PIN, GPIO.LOW)
+        time.sleep(0.5)
+
+def check_air_quality(temperature, humidity, gas_resistance):
+    # Calculate VOC approximation
+    voc_level = GAS_RESISTANCE_BASELINE / gas_resistance
+    poor_quality = False
+
+    # Check if any parameter is beyond the threshold
+    if temperature > TEMP_THRESHOLD or humidity > HUMIDITY_THRESHOLD or voc_level > 1:
+        poor_quality = True
+
+    return poor_quality
+
+try:
+    while True:
+        if sensor.get_sensor_data():
+            temp = sensor.data.temperature
+            humid = sensor.data.humidity
+            gas_res = sensor.data.gas_resistance
+
+            if check_air_quality(temp, humid, gas_res):
+                print(f"Temperature: {temp} C, Humidity: {humid} %, Gas Resistance: {gas_res} Ohms")
+                print("Poor air quality detected!")
+                trigger_alert()
+
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
