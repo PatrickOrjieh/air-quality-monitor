@@ -248,7 +248,7 @@ fun dataScreen(navController: NavHostController) {
 
         Text(
             text = "VOC Level -",
-            color = vocColor,
+            color = Color(0xff1e1e1e),
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
