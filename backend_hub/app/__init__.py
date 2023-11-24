@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_mysqldb import MySQL
 from dotenv import load_dotenv
+from .background_tasks import start_background_task
 import os
+
+app = Flask(__name__)
 
 load_dotenv()
 #set the location of the .env file
@@ -10,9 +13,6 @@ load_dotenv(os.path.join(basedir, 'backend_hub\.env'))
 
 
 print(os.getenv('MYSQL_HOST'))  # Should print the MySQL host if loaded correctly
-
-
-app = Flask(__name__)
 
 # Database Configuration from .env file
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
@@ -25,3 +25,6 @@ mysql = MySQL(app)
 from app.api import user
 from app.api import data
 from app.api import hub
+from app.api import pollen
+
+start_background_task(app)

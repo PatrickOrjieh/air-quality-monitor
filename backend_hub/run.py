@@ -1,9 +1,5 @@
-from app import app
-from background_tasks import start_background_task
-
-print("Before starting background task")
-start_background_task(app)
-print("After starting background task")
+from app import app, start_background_task
 
 if __name__ == "__main__":
+    start_background_task(app)
     app.run(debug=True)

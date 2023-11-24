@@ -55,7 +55,6 @@ def update_user_settings(user_id):
         ''', (notification_frequency, vibration, sound, user_id))
     mysql.connection.commit()
 
-    # After updating settings, publish to PubNub
     message = {
         'userID': user_id,
         'notificationFrequency': notification_frequency,
