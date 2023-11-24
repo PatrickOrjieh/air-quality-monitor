@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS aerosense;
 CREATE DATABASE IF NOT EXISTS aerosense;
 
 USE aerosense;
@@ -7,10 +8,12 @@ CREATE TABLE User (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    createdAt DATETIME NOT NULL,
-    updatedAt DATETIME
+    firebaseUID VARCHAR(255) NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Create Hub table
 CREATE TABLE Hub (
     hubID INT AUTO_INCREMENT PRIMARY KEY,
     modelNumber VARCHAR(255) NOT NULL,
@@ -19,15 +22,17 @@ CREATE TABLE Hub (
     FOREIGN KEY (userID) REFERENCES User(userID)
 );
 
+-- Create Location table
 CREATE TABLE Location (
     locationID INT AUTO_INCREMENT PRIMARY KEY,
     hubID INT NOT NULL,
     latitude DECIMAL(9,6) NOT NULL,
     longitude DECIMAL(9,6) NOT NULL,
-    createdAt DATETIME NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (hubID) REFERENCES Hub(hubID)
 );
 
+-- Create AirQualityMeasurement table
 CREATE TABLE AirQualityMeasurement (
     measurementID INT AUTO_INCREMENT PRIMARY KEY,
     hubID INT NOT NULL,
@@ -39,29 +44,32 @@ CREATE TABLE AirQualityMeasurement (
     humidity DECIMAL(5,2),
     gas_resistance DECIMAL(10,2),
     pollenCount INT,
-    timestamp DATETIME NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (hubID) REFERENCES Hub(hubID)
 );
 
+-- Create Notification table
 CREATE TABLE Notification (
     notificationID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,
     message TEXT NOT NULL,
     isRead BOOLEAN NOT NULL DEFAULT FALSE,
-    createdAt DATETIME NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userID) REFERENCES User(userID)
 );
 
+-- Create AsthmaProfile table
 CREATE TABLE AsthmaProfile (
     profileID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,
     personalTrigger VARCHAR(255),
     asthmaCondition VARCHAR(255),
-    createdAt DATETIME NOT NULL,
-    updatedAt DATETIME,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (userID) REFERENCES User(userID)
 );
 
+-- Create UserSetting table
 CREATE TABLE UserSetting (
     settingID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,

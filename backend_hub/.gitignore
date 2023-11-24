@@ -11,3 +11,5 @@ venv/
 
 # Pytest
 .pytest_cache/
+
+aerosense.json
