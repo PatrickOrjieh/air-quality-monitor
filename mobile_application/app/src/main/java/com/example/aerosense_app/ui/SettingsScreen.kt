@@ -44,6 +44,7 @@ fun Settings(navController: NavHostController){
     var sound by remember { mutableStateOf(false) }
     val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
 
+    battery = 65
 
     NavBar(navController)
 
@@ -113,27 +114,42 @@ fun Settings(navController: NavHostController){
 
             }
 
-            Text(
-                text = "Connected",
-                color = Color(0xff1e1e1e),
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium
-                ),
-                modifier = Modifier
-                    .padding(top = 5.dp)
-                    .padding(start = 20.dp)
-            )
+            if(connected) {
+                Text(
+                    text = "Connected",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .padding(start = 20.dp)
+                )
 
-            Image(
-                painter = painterResource(id = R.drawable.tick),
-                contentDescription = "check",
-                modifier = Modifier
-                    .requiredWidth(width = 45.dp)
-                    .requiredHeight(height = 45.dp)
-                    // .offset(y = 5.dp, x = 10.dp)
-                    .padding(start = 10.dp)
-            )
+                Image(
+                    painter = painterResource(id = R.drawable.tick),
+                    contentDescription = "check",
+                    modifier = Modifier
+                        .requiredWidth(width = 45.dp)
+                        .requiredHeight(height = 45.dp)
+                        // .offset(y = 5.dp, x = 10.dp)
+                        .padding(start = 10.dp)
+                )
+            }
+            else{
+                Text(
+                    text = "Not Connected",
+                    color = Color(0xff1e1e1e),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .padding(start = 20.dp)
+                )
+            }
 
         }
 
