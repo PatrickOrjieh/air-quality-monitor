@@ -156,26 +156,18 @@ fun dataScreen(navController: NavHostController) {
         )
 
         //If statements to change the color of the air quality measures
-        if(percent >=0 && percent <= 50){
+        if(pmTwo >=0 && pmTwo <= 10){
             //Make the color green
             pmTwoColor = Color(0xffff50f413 )
-            pmTenColor = Color(0xffff50f413 )
-            vocColor = Color(0xffff50f413 )
         }
-        else if(percent > 50 && percent < 101) {
+        else if(pmTwo > 10 && pmTwo <= 20) {
             pmTwoColor = Color(0xffffa629)
-            pmTenColor = Color(0xffffa629)
-            vocColor = Color(0xffffa629)
         }
-        else if(percent < 151 && percent > 100){
+        else if(pmTwo < 20 && pmTwo >= 25){
             pmTwoColor = Color(0xfff24822)
-            pmTenColor = Color(0xfff24822)
-            vocColor = Color(0xfff24822)
         }
         else{
             pmTwoColor = Color(0xffaf21d2)
-            pmTenColor = Color(0xffaf21d2)
-            vocColor = Color(0xffaf21d2)
         }
 
         Text(
@@ -208,6 +200,22 @@ fun dataScreen(navController: NavHostController) {
                     y = 63.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(pmTen >=0 && pmTen <= 20){
+            //Make the color green
+            pmTenColor = Color(0xffff50f413 )
+        }
+        else if(pmTen > 20 && pmTen < 40) {
+            pmTenColor = Color(0xffffa629)
+        }
+        else if(pmTen < 40 && pmTen > 50){
+            pmTenColor = Color(0xfff24822)
+        }
+        else{
+            pmTenColor = Color(0xffaf21d2)
+        }
+
         Text(
             text = pmTen.toString() + "µg/m^3",
             color = Color(0xffffa629),
@@ -261,8 +269,24 @@ fun dataScreen(navController: NavHostController) {
                     y = 43.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(voc >=0 && voc <= 200){
+            //Make the color green
+            vocColor = Color(0xffff50f413 )
+        }
+        else if(voc > 200 && voc <= 500) {
+            vocColor = Color(0xffffa629)
+        }
+        else if(voc < 500 && voc >= 1000){
+            vocColor = Color(0xfff24822)
+        }
+        else{
+            vocColor = Color(0xffaf21d2)
+        }
+
         Text(
-            text = "505 ppb",
+            text = "$voc ppb",
             color = Color(0xfff24822),
             lineHeight = 3.75.em,
             style = TextStyle(
