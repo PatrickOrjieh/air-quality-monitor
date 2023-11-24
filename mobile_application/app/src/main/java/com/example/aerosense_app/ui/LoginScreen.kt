@@ -113,13 +113,13 @@ fun Login(navController: NavHostController) {
                     onValueChange = {
                         email = it
                         // Perform email validation
-                        //Found information on using patterns from: https://developer.android.com/reference/android/util/Patterns#EMAIL_ADDRESS
-                        if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
+                        if(android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
                         {
                             loginError = null // No error
                             validEmail = true
                         } else {
                             loginError = "Invalid login details"
+                            validEmail = false
                         }
                     },
                     modifier = Modifier
