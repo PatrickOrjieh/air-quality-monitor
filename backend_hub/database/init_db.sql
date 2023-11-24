@@ -73,7 +73,7 @@ CREATE TABLE AsthmaProfile (
 CREATE TABLE UserSetting (
     settingID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,
-    notificationFrequency INT,
+    notificationFrequency VARCHAR(255) NOT NULL,
     vibration BOOLEAN NOT NULL,
     sound BOOLEAN NOT NULL,
     FOREIGN KEY (userID) REFERENCES User(userID)

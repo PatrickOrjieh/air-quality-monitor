@@ -7,14 +7,18 @@ from pubnub.pnconfiguration import PNConfiguration
 from dotenv import load_dotenv
 import os
 
+# Load environment variables
 load_dotenv()
 
+# Initialize PubNub
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = os.getenv('PUBNUB_SUBSCRIBE_KEY')
 pnconfig.publish_key = os.getenv('PUBNUB_PUBLISH_KEY')
 pnconfig.user_id = "aerosense-modelx-pi"
 pnconfig.cipher_key = os.getenv('PUBNUB_CIPHER_KEY')
 pubnub = PubNub(pnconfig)
+
+BUZZER_ACTIVE = True
 
 # GPIO setup
 LED_PIN = 16
@@ -39,17 +43,30 @@ TEMP_THRESHOLD = 30
 HUMIDITY_THRESHOLD = 57
 GAS_RESISTANCE_BASELINE = 10000
 
+# PubNub callback class
+class MySubscribeCallback(SubscribeCallback):
+    def message(self, pubnub, message):
+        global BUZZER_ACTIVE
+        if 'sound' in message.message:
+            BUZZER_ACTIVE = message.message['sound']
+
+# Register PubNub listener
+pubnub.add_listener(MySubscribeCallback())
+pubnub.subscribe().channels('user_settings_channel').execute()
+
 def beep(repeat):
-    for _ in range(repeat):
-        for pulse in range(60):
-            GPIO.output(BUZZER_PIN, True)
-            time.sleep(0.001)
-            GPIO.output(BUZZER_PIN, False)
-            time.sleep(0.001)
-        time.sleep(0.02)
+    if BUZZER_ACTIVE:
+        for _ in range(repeat):
+            for pulse in range(60):
+                GPIO.output(BUZZER_PIN, True)
+                time.sleep(0.001)
+                GPIO.output(BUZZER_PIN, False)
+                time.sleep(0.001)
+            time.sleep(0.02)
 
 def trigger_alert():
     beep(5)
+    # Blink LED 5 times
     for _ in range(5):
         GPIO.output(LED_PIN, GPIO.HIGH)
         time.sleep(0.5)
@@ -59,15 +76,11 @@ def trigger_alert():
 def check_air_quality(temp, humid, gas_res):
     # Calculate VOC
     voc_level = GAS_RESISTANCE_BASELINE / gas_res
-    poor_quality = False
-
-    # Check if any parameter is beyond the threshold
-    if temp > TEMP_THRESHOLD or humid > HUMIDITY_THRESHOLD or voc_level > 1:
-        poor_quality = True
-
+    poor_quality = temp > TEMP_THRESHOLD or humid > HUMIDITY_THRESHOLD or voc_level > 1
     return poor_quality
 
 def my_publish_callback(envelope, status):
+    # Handle publish response
     if not status.is_error():
         print("Message published successfully")
     else:
@@ -83,6 +96,7 @@ try:
 
             # Construct the payload
             data = {
+                'modelNumber': "ModelX",
                 'temperature': temp,
                 'humidity': humid,
                 'voc': voc_level,

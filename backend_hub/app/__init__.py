@@ -24,3 +24,4 @@ mysql = MySQL(app)
 
 from app.api import user
 from app.api import data
+from app.api import hub

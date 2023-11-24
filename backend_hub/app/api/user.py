@@ -49,7 +49,7 @@ def register_user():
     mysql.connection.commit()
     cursor.close()
 
-    return jsonify({"message": "User registered successfully", "firebaseUID": firebase_user_id}), 201
+    return jsonify({"message": "User registered successfully", "firebaseUID": firebase_user_id, "userID": user_id}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login_user():

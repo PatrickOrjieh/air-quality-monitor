@@ -39,22 +39,37 @@ def store_data(data):
             password=os.getenv('MYSQL_PASSWORD'),
             database=os.getenv('MYSQL_DB_NAME')
         )
-        cursor = connection.cursor()
-        # print("Connected to database")
+        cursor = connection.cursor(buffered=True)  # Use buffered cursor
+        print("Connected to database")
     except Exception as e:
-        # print(f"Error connecting to database: {e}")
+        print(f"Error connecting to database: {e}")
         return
 
-    #using the modelNumber from the data, get the hubID
-    cursor.execute('SELECT hubID FROM Hub WHERE modelNumber = %s', (data['modelNumber'],))
-    hubID = cursor.fetchone()[0]
-    # Insert data into the database
-    query = "INSERT INTO AirQualityMeasurement (hubID, PM1, PM2_5, PM10, VOC, temperature, humidity, gas_resistance, pollenCount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    values = (hubID, 1, 2.5, 10, data['voc'], data['temperature'], data['humidity'], data['gas_resistance'], 2)
-    cursor.execute(query, values)
-    connection.commit()
-    cursor.close()
-    connection.close()
+    try:
+        # Using the modelNumber from the data, get the hubID
+        cursor.execute('SELECT hubID FROM Hub WHERE modelNumber = %s', (data['modelNumber'],))
+        result = cursor.fetchone()
+        if result:
+            hubID = result[0]
+            # Insert data into the database
+            query = """
+                INSERT INTO AirQualityMeasurement (
+                    hubID, PM1, PM2_5, PM10, VOC, temperature, humidity, gas_resistance, pollenCount
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            values = (
+                hubID, 1, 2.5, 10, data['voc'], data['temperature'],
+                data['humidity'], data['gas_resistance'], 2
+            )
+            cursor.execute(query, values)
+            connection.commit()
+        else:
+            print("Hub not found")
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+    finally:
+        cursor.close()
+        connection.close()
 
 def start_pubnub_listener(app):
     with app.app_context():
