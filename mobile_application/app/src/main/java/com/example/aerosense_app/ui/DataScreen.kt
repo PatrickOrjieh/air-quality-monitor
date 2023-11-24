@@ -32,17 +32,22 @@ import com.example.aerosense_app.ui.components.NavBar
 
 @Composable
 fun dataScreen(navController: NavHostController) {
-    var percent by remember { mutableIntStateOf(0) }
+    var percent by remember { mutableIntStateOf(54) }
+    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var time by remember { mutableStateOf("") }
     var pmTwo by remember { mutableIntStateOf(0) }
+    var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var pmTen by remember { mutableIntStateOf(0) }
+    var pmTenColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
+    var voc by remember { mutableIntStateOf(0) }
+    var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var isMenuExpanded by remember { mutableStateOf(false) }
 
     percent = 58
     time = "12:56"
     pmTwo = 18
     pmTen = 42
-
+    voc = 505
 
     NavBar(navController)
 
@@ -70,9 +75,24 @@ fun dataScreen(navController: NavHostController) {
                     )
                 }
         )
+
+        if(percent >= 80) {
+            //Make the color green
+            percentageColor = Color(0xffff50f413 )
+        }
+        else if(percent < 80 && percent > 64) {
+            percentageColor = Color(0xffffa629)
+        }
+        else if(percent < 65 && percent > 30){
+            percentageColor = Color(0xfff24822)
+        }
+        else{
+            percentageColor = Color(0xffaf21d2)
+        }
+
         Text(
-            text = "57% Clean",
-            color = Color(0xfff24822),
+            text = "$percent% CLean",
+            color = percentageColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 30.sp,
@@ -134,9 +154,33 @@ fun dataScreen(navController: NavHostController) {
                     y = 15.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(percent >=0 && percent <= 50){
+            //Make the color green
+            pmTwoColor = Color(0xffff50f413 )
+            pmTenColor = Color(0xffff50f413 )
+            vocColor = Color(0xffff50f413 )
+        }
+        else if(percent > 50 && percent < 101) {
+            pmTwoColor = Color(0xffffa629)
+            pmTenColor = Color(0xffffa629)
+            vocColor = Color(0xffffa629)
+        }
+        else if(percent < 151 && percent > 100){
+            pmTwoColor = Color(0xfff24822)
+            pmTenColor = Color(0xfff24822)
+            vocColor = Color(0xfff24822)
+        }
+        else{
+            pmTwoColor = Color(0xffaf21d2)
+            pmTenColor = Color(0xffaf21d2)
+            vocColor = Color(0xffaf21d2)
+        }
+
         Text(
             text = pmTwo.toString() + "µg/m^3",
-            color = Color(0xffffa629),
+            color = pmTwoColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
@@ -201,9 +245,10 @@ fun dataScreen(navController: NavHostController) {
                     y = 4.5.dp
                 )
         )
+
         Text(
             text = "VOC Level -",
-            color = Color(0xff1e1e1e),
+            color = vocColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
