@@ -42,6 +42,8 @@ import com.example.aerosense_app.Screen
 fun Login(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var loginError by remember { mutableStateOf<String?>(null) }
+    var isError by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -107,7 +109,17 @@ fun Login(navController: NavHostController) {
 
                 TextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        // Perform email validation
+                        if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
+                        {
+                            loginError = null // No error
+                            isError = false
+                        } else {
+                            isError = true
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -133,7 +145,16 @@ fun Login(navController: NavHostController) {
 
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        // Regex to check if password is 6 characters long, has a capital letter, a number and a special character
+                        if (it.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))) {
+                            loginError = null // No error
+                            isError = false
+                        } else {
+                            isError = true
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -143,20 +164,63 @@ fun Login(navController: NavHostController) {
                 )
             }
 
-            // Login Button wrapped in a Row for right alignment
+            // Error text
+            Text(
+                text = loginError ?: "",
+                style = TextStyle(
+                    color = Color.Red,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .align(Alignment.Start)
+                    .offset(y = -50.dp)
+            )
+
+            Spacer(modifier = Modifier.height(30.dp)  )
+
+            // Login Button wrapped in a Row
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier
-                    .padding(start = 240.dp)
                     .offset(y = -50.dp)
             ) {
+
+                Text(
+                    text = "Forgot Password?",
+                    style = TextStyle(
+                        color = Color.Blue,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 10.dp)
+                        .clickable {
+                            navController.navigate(Screen.ResetPassword.name)
+                        }
+                )
+
                 Button(
                     onClick = {
-                        // Handle login button click
-                        navController.navigate(Screen.DataScreen.name)
+
+                        val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val enteredPassword = password.isNotEmpty() && password.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))
+
+                        if(isError) {
+                            loginError = "Invalid login details"
+                        }
+
+                        if (loginError == null && enteredEmail && enteredPassword) {
+                            navController.navigate(Screen.DataScreen.name)
+                        }
+                        else{
+                            loginError = "Invalid login details"
+                        }
                     },
                     modifier = Modifier
-                        .height(53.dp),
+                        .height(53.dp)
+                        .padding(start = 60.dp),
                     shape = MaterialTheme.shapes.large // Apply rounded corners
                 ) {
                     Text(text = "Log In")
@@ -167,7 +231,7 @@ fun Login(navController: NavHostController) {
                 horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = 20.dp)
+                    .offset(y = 10.dp)
             ) {
 
                 //Make text for not having account and click to register

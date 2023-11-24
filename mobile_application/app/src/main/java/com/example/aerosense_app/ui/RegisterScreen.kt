@@ -46,6 +46,8 @@ fun Register(navController: NavHostController) {
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     var modelNum by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var isError by remember { mutableStateOf(false) }
 
 
 
@@ -93,7 +95,17 @@ fun Register(navController: NavHostController) {
 
                 TextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = {
+                        name = it
+
+                        if(it.isNotEmpty()) {
+                            error = null // No error
+                            isError = false
+                        } else {
+                            error = "Full Name is required"
+                            isError = true
+                        }
+                                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -118,7 +130,18 @@ fun Register(navController: NavHostController) {
 
                 TextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        //Found information on patterns from: https://developer.android.com/reference/android/util/Patterns#EMAIL_ADDRESS
+                        if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
+                        {
+                            error = null // No error
+                            isError = false
+                        } else {
+                            error = "Email format is incorrect"
+                            isError = true
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -143,7 +166,17 @@ fun Register(navController: NavHostController) {
 
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        // Regex to check if password is 6 characters long, has a capital letter, a number and a special character
+                        if (it.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))) {
+                            error = null // No error
+                            isError = false
+                        } else {
+                            error = "Password must be 6 characters long, have a capital letter, a number & a special character"
+                            isError = true
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -170,7 +203,18 @@ fun Register(navController: NavHostController) {
 
                 TextField(
                     value = confirm,
-                    onValueChange = { confirm = it },
+                    onValueChange = {
+                        confirm = it
+
+                        if(it == password) {
+                            error = null // No error
+                            isError = false
+                        } else {
+                            error = "Passwords do not match"
+                            isError = true
+                        }
+
+                                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -196,7 +240,18 @@ fun Register(navController: NavHostController) {
 
                 TextField(
                     value = modelNum,
-                    onValueChange = { modelNum = it },
+                    onValueChange = {
+                        modelNum = it
+
+                        if(it.isNotEmpty()) {
+                            error = null // No error
+                            isError = false
+                        } else {
+                            error = "Hub Model Number is required"
+                            isError = true
+                        }
+
+                                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f), // Take remaining space in the Row
@@ -205,13 +260,44 @@ fun Register(navController: NavHostController) {
                 )
             }
 
+            // Error text
+            Text(
+                text = error ?: "",
+                style = TextStyle(
+                    color = Color.Red,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .align(Alignment.Start)
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.padding(start = 230.dp)
             ) {
                 Button(
                     onClick = {
-                        navController.navigate(Screen.DataScreen.name)
+
+                        val enteredName = name.isNotEmpty()
+                        val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val enteredPassword = password.isNotEmpty() && password.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))
+                        val enteredConfirm = confirm.isNotEmpty() && confirm == password
+                        val enteredModelNum = modelNum.isNotEmpty()
+
+                        if(isError) {
+                            error = "Invalid register details"
+                        }
+
+                        if (error == null && enteredName && enteredEmail && enteredPassword && enteredConfirm && enteredModelNum) {
+                            navController.navigate(Screen.DataScreen.name)
+                        }
+                        else {
+                            error = "Invalid register details"
+                        }
                     },
                     modifier = Modifier
                         .height(53.dp),
@@ -221,7 +307,7 @@ fun Register(navController: NavHostController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             //Make text for not having account and click to register
             Text(

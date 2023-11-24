@@ -253,24 +253,28 @@ fun dataScreen(navController: NavHostController) {
                     y = 4.5.dp
                 )
         )
-        Text(
-            text = "View Location",
-            color = Color(0xff237ec1),
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier
-                .clickable {
-                    navController.navigate(Screen.Location.name)
-                }
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 169.dp,
-                    y = 33.5.dp
-                )
+
+        Box(modifier = Modifier.offset(
+            x = 169.dp,
+            y = 33.5.dp
         )
+            .clickable {
+            navController.navigate(Screen.Location.name)
+        }) {
+
+            Text(
+                text = "View Location",
+                color = Color(0xff237ec1),
+                lineHeight = 3.75.em,
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier
+                    .align(alignment = Alignment.TopStart)
+
+            )
+        }
     }
 
 }
