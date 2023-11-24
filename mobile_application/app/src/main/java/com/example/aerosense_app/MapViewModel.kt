@@ -30,10 +30,10 @@ class MapViewModel @Inject constructor(): ViewModel() {
                     title = "Zone 1",
                     snippet = "This is Zone 1.",
                     polygonOptions = polygonOptions {
-                        add(LatLng(49.105, -122.524))
-                        add(LatLng(49.101, -122.529))
-                        add(LatLng(49.092, -122.501))
-                        add(LatLng(49.1, -122.506))
+                        add(LatLng(53.98267190694426, -6.392890277320703))
+                        add(LatLng(53.98206474338727, -6.392890277320703))
+                        add(LatLng(53.98206474338727, -6.3902555429016275))
+                        add(LatLng(53.98267190694426, -6.3902555429016275))
                         fillColor(POLYGON_FILL_COLOR)
                     }
                 ),
@@ -42,10 +42,10 @@ class MapViewModel @Inject constructor(): ViewModel() {
                     title = "Zone 2",
                     snippet = "This is Zone 2.",
                     polygonOptions = polygonOptions {
-                        add(LatLng(49.110, -122.554))
-                        add(LatLng(49.107, -122.559))
-                        add(LatLng(49.103, -122.551))
-                        add(LatLng(49.112, -122.549))
+                        add(LatLng(54.001225765645756, -6.412810475185324))
+                        add(LatLng(54.00092957923849, -6.412810475185324))
+                        add(LatLng(54.00092957923849, -6.412453858091681))
+                        add(LatLng(54.001225765645756, -6.412453858091681))
                         fillColor(POLYGON_FILL_COLOR)
                     }
                 )
