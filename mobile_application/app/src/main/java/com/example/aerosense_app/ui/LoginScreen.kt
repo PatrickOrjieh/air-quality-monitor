@@ -43,7 +43,8 @@ fun Login(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf<String?>(null) }
-    var isError by remember { mutableStateOf(false) }
+    var validEmail by remember { mutableStateOf(false) }
+    var validPassword by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -112,12 +113,13 @@ fun Login(navController: NavHostController) {
                     onValueChange = {
                         email = it
                         // Perform email validation
-                        if(it.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
+                        if(android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches())
                         {
                             loginError = null // No error
-                            isError = false
+                            validEmail = true
                         } else {
-                            isError = true
+                            loginError = "Invalid login details"
+                            validEmail = false
                         }
                     },
                     modifier = Modifier
@@ -150,9 +152,10 @@ fun Login(navController: NavHostController) {
                         // Regex to check if password is 6 characters long, has a capital letter, a number and a special character
                         if (it.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))) {
                             loginError = null // No error
-                            isError = false
+                            validPassword = true
                         } else {
-                            isError = true
+                            loginError = "Invalid login details"
+                            validPassword = false
                         }
                     },
                     modifier = Modifier
@@ -204,17 +207,9 @@ fun Login(navController: NavHostController) {
                 Button(
                     onClick = {
 
-                        val enteredEmail = email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-                        val enteredPassword = password.isNotEmpty() && password.matches(Regex("^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\\$%^&*()]).{6,}\$"))
-
-                        if(isError) {
-                            loginError = "Invalid login details"
-                        }
-
-                        if (loginError == null && enteredEmail && enteredPassword) {
+                        if (validEmail && validPassword) {
                             navController.navigate(Screen.DataScreen.name)
-                        }
-                        else{
+                        } else {
                             loginError = "Invalid login details"
                         }
                     },

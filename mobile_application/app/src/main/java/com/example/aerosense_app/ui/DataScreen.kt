@@ -32,17 +32,22 @@ import com.example.aerosense_app.ui.components.NavBar
 
 @Composable
 fun dataScreen(navController: NavHostController) {
-    var percent by remember { mutableIntStateOf(0) }
+    var percent by remember { mutableIntStateOf(54) }
+    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var time by remember { mutableStateOf("") }
     var pmTwo by remember { mutableIntStateOf(0) }
+    var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var pmTen by remember { mutableIntStateOf(0) }
+    var pmTenColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
+    var voc by remember { mutableIntStateOf(0) }
+    var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var isMenuExpanded by remember { mutableStateOf(false) }
 
     percent = 58
     time = "12:56"
     pmTwo = 18
     pmTen = 42
-
+    voc = 505
 
     NavBar(navController)
 
@@ -70,9 +75,24 @@ fun dataScreen(navController: NavHostController) {
                     )
                 }
         )
+
+        if(percent >= 80) {
+            //Make the color green
+            percentageColor = Color(0xffff50f413 )
+        }
+        else if(percent < 80 && percent > 64) {
+            percentageColor = Color(0xffffa629)
+        }
+        else if(percent < 65 && percent > 30){
+            percentageColor = Color(0xfff24822)
+        }
+        else{
+            percentageColor = Color(0xffaf21d2)
+        }
+
         Text(
-            text = "57% Clean",
-            color = Color(0xfff24822),
+            text = "$percent% CLean",
+            color = percentageColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 30.sp,
@@ -134,9 +154,25 @@ fun dataScreen(navController: NavHostController) {
                     y = 15.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(pmTwo >=0 && pmTwo <= 10){
+            //Make the color green
+            pmTwoColor = Color(0xffff50f413 )
+        }
+        else if(pmTwo > 10 && pmTwo <= 20) {
+            pmTwoColor = Color(0xffffa629)
+        }
+        else if(pmTwo < 20 && pmTwo >= 25){
+            pmTwoColor = Color(0xfff24822)
+        }
+        else{
+            pmTwoColor = Color(0xffaf21d2)
+        }
+
         Text(
             text = pmTwo.toString() + "µg/m^3",
-            color = Color(0xffffa629),
+            color = pmTwoColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
@@ -164,6 +200,22 @@ fun dataScreen(navController: NavHostController) {
                     y = 63.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(pmTen >=0 && pmTen <= 20){
+            //Make the color green
+            pmTenColor = Color(0xffff50f413 )
+        }
+        else if(pmTen > 20 && pmTen < 40) {
+            pmTenColor = Color(0xffffa629)
+        }
+        else if(pmTen < 40 && pmTen > 50){
+            pmTenColor = Color(0xfff24822)
+        }
+        else{
+            pmTenColor = Color(0xffaf21d2)
+        }
+
         Text(
             text = pmTen.toString() + "µg/m^3",
             color = Color(0xffffa629),
@@ -201,6 +253,7 @@ fun dataScreen(navController: NavHostController) {
                     y = 4.5.dp
                 )
         )
+
         Text(
             text = "VOC Level -",
             color = Color(0xff1e1e1e),
@@ -216,8 +269,24 @@ fun dataScreen(navController: NavHostController) {
                     y = 43.dp
                 )
         )
+
+        //If statements to change the color of the air quality measures
+        if(voc >=0 && voc <= 200){
+            //Make the color green
+            vocColor = Color(0xffff50f413 )
+        }
+        else if(voc > 200 && voc <= 500) {
+            vocColor = Color(0xffffa629)
+        }
+        else if(voc < 500 && voc >= 1000){
+            vocColor = Color(0xfff24822)
+        }
+        else{
+            vocColor = Color(0xffaf21d2)
+        }
+
         Text(
-            text = "505 ppb",
+            text = "$voc ppb",
             color = Color(0xfff24822),
             lineHeight = 3.75.em,
             style = TextStyle(

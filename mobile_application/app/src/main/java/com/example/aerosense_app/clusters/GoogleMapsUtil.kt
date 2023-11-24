@@ -1,5 +1,6 @@
 package com.codingwithmitch.composegooglemaps.clusters
 
+//Code taken from: https://github.com/mitchtabian/Google-Maps-Compose
 /**
  * A set of utility functions for centering the camera given some [LatLng] points.
  * Author: Mitch Tabian 2022
