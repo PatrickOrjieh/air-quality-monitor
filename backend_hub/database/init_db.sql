@@ -37,6 +37,7 @@ CREATE TABLE AirQualityMeasurement (
     VOC DECIMAL(10,2),
     temperature DECIMAL(5,2),
     humidity DECIMAL(5,2),
+    gas_resistance DECIMAL(10,2),
     pollenCount INT,
     timestamp DATETIME NOT NULL,
     FOREIGN KEY (hubID) REFERENCES Hub(hubID)
