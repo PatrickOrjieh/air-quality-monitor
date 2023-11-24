@@ -23,3 +23,4 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB_NAME')
 mysql = MySQL(app)
 
 from app.api import user
+from app.api import data

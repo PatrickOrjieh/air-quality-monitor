@@ -2,6 +2,7 @@ from flask import request, jsonify
 from app import app, mysql
 import firebase_admin
 from firebase_admin import auth, credentials
+from werkzeug.security import generate_password_hash
 
 cred = credentials.Certificate("./aerosense.json")
 firebase_admin.initialize_app(cred)
@@ -19,20 +20,19 @@ def register_user():
     confirm_password = data.get('confirmPassword')
     model_number = data.get('modelNumber')
 
-    # Validate data (e.g., check if passwords match)
     if password != confirm_password:
         return jsonify({"error": "Passwords do not match"}), 400
 
-    # Firebase user creation
+    hashed_password = generate_password_hash(password)
+
     try:
         user_record = auth.create_user(email=email, password=password)
         firebase_user_id = user_record.uid
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-    # Insert user into MySQL database
     cursor = mysql.connection.cursor()
-    cursor.execute('INSERT INTO User (name, email, password, firebaseUID) VALUES (%s, %s, %s, %s)', (name, email, password, firebase_user_id))
+    cursor.execute('INSERT INTO User (name, email, password, firebaseUID) VALUES (%s, %s, %s, %s)', (name, email, hashed_password, firebase_user_id))
     mysql.connection.commit()
     cursor.close()
 
