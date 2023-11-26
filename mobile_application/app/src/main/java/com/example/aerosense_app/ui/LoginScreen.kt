@@ -1,3 +1,5 @@
+
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,12 +36,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.api.Repository
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(navController: NavHostController) {
+fun Login(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf<String?>(null) }
@@ -109,7 +114,7 @@ fun Login(navController: NavHostController) {
                 Spacer(modifier = Modifier.width(8.dp))
 
                 TextField(
-                    value = email,
+                    value = email.trim(),
                     onValueChange = {
                         email = it
                         // Perform email validation
@@ -207,11 +212,51 @@ fun Login(navController: NavHostController) {
                 Button(
                     onClick = {
 
-                        if (validEmail && validPassword) {
-                            navController.navigate(Screen.DataScreen.name)
-                        } else {
-                            loginError = "Invalid login details"
-                        }
+                        email = email.trim()
+                        Log.d("Login", "Email: $email")
+
+                        FirebaseAuth
+                            .getInstance()
+                            .signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { signInTask ->
+                                if (signInTask.isSuccessful) {
+                                    // Login successful, get the user and ID token
+                                    val user = FirebaseAuth.getInstance().currentUser
+                                    user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                                        if (tokenTask.isSuccessful) {
+                                            val idToken = tokenTask.result?.token
+
+                                            Log.d("LoginToken", "idToken: $idToken")
+
+                                            // Set the token in the ViewModel
+                                            firebaseModel.firebaseToken = idToken
+
+                                            // Navigate to the data screen
+                                            navController.navigate(Screen.DataScreen.name)
+                                        } else {
+                                            // Handle error in getting ID token
+                                            loginError = "Error in getting Firebase ID token"
+                                        }
+                                    }
+                                } else {
+                                    // Login failed
+                                    Log.d("Login", "Login failed")
+                                    loginError = "Invalid login details"
+                                }
+                            }
+                            .addOnFailureListener {
+                                Log.d("Login", "Login failed: ${it.localizedMessage}")
+                                loginError = "Invalid login details"
+                            }
+
+
+
+//                        if (validEmail && validPassword) {
+//
+//                            navController.navigate(Screen.DataScreen.name)
+//                        } else {
+//                            loginError = "Invalid login details"
+//                        }
                     },
                     modifier = Modifier
                         .height(53.dp)

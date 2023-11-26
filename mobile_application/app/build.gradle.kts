@@ -5,6 +5,7 @@ plugins {
     id ("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id ("dagger.hilt.android.plugin")
     kotlin("kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -66,6 +67,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.5")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.5")
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -94,4 +96,20 @@ dependencies {
     implementation ("com.google.dagger:hilt-android:2.42")
     kapt ("com.google.dagger:hilt-compiler:2.42")
 
+    implementation ("io.reactivex.rxjava2:rxjava:2.1.8")
+    implementation ("io.reactivex.rxjava2:rxandroid:2.0.2")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.jakewharton.retrofit:retrofit2-rxjava2-adapter:1.0.0")
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
+
+
+    // TODO: Add the dependencies for Firebase products you want to use
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation("com.google.firebase:firebase-analytics")
+
+    implementation ("com.google.firebase:firebase-auth:22.3.0")
+    implementation ("com.google.firebase:firebase-auth-ktx")
 }
