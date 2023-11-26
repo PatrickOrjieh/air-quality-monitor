@@ -5,23 +5,23 @@ from firebase_admin import auth
 
 @app.route('/api/home', methods=['GET'])
 def get_air_quality_data():
-    # Firebase token verification
-    token = request.headers.get('Authorization')
+    # Retrieve the Firebase token from the request headers
+    token = request.headers.get('X-Access-Token')
     if not token:
-        return jsonify({'error': 'Authorization token is missing'}), 401
+        return jsonify({'error': 'Firebase ID token is required'}), 401
 
     try:
         # Verify the Firebase ID token and get the user's information
         decoded_token = auth.verify_id_token(token)
         firebase_user_id = decoded_token['uid']
 
-        # Fetch the user ID associated with the Firebase UID
+        # Use the Firebase UID to find the associated user ID in the database
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT userID FROM User WHERE firebaseUID = %s', (firebase_user_id,))
         user_result = cursor.fetchone()
 
         if not user_result:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'error': 'User not found in the database'}), 404
 
         user_id = user_result[0]
 
@@ -30,7 +30,7 @@ def get_air_quality_data():
         hub_result = cursor.fetchone()
 
         if not hub_result:
-            return jsonify({'error': 'No hub associated with this user'}), 404
+            return jsonify({'error': 'No hub associated with this user in the database'}), 404
 
         hub_id = hub_result[0]
 
@@ -58,6 +58,6 @@ def get_air_quality_data():
             return jsonify({'message': 'No air quality data available for this hub.'}), 404
 
     except firebase_admin.exceptions.FirebaseError:
-        return jsonify({'error': 'Invalid Firebase ID token'}), 401
+        return jsonify({'error': 'Invalid Firebase ID token provided'}), 401
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An unexpected error occurred: ' + str(e)}), 500
