@@ -1,9 +1,10 @@
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from app import app, db
-from app.models import UserSetting
+from app.models import UserSetting, User
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from dotenv import load_dotenv
+from firebase_admin import auth, exceptions
 import os
 
 # Load environment variables form .env file
@@ -22,44 +23,78 @@ pubnub = PubNub(pnconfig)
 def publish_message(channel, message):
     pubnub.publish().channel(channel).message(message).sync()
 
-@app.route('/api/settings/<int:user_id>', methods=['GET'])
-def get_user_settings(user_id):
-    settings = UserSetting.query.filter_by(userID=user_id).first()
-    
-    if settings:
-        return jsonify({
-            "settingID": settings.settingID,
-            "userID": settings.userID,
-            "notificationFrequency": settings.notificationFrequency,
-            "vibration": settings.vibration,
-            "sound": settings.sound,
-        }), 200
-    else:
-        return jsonify({"error": "Settings not found"}), 404
+def get_user_id_from_firebase_uid(firebase_uid):
+    user = User.query.filter_by(firebaseUID=firebase_uid).first()
+    return user.userID if user else None
 
-@app.route('/api/settings/<int:user_id>', methods=['POST'])
-def update_user_settings(user_id):
-    data = request.get_json()
-    notification_frequency = data.get('notificationFrequency')
-    vibration = data.get('vibration')
-    sound = data.get('sound')
+def get_firebase_uid_from_token():
+    id_token = request.headers.get('Authorization')
+    if not id_token:
+        abort(401, description="No authentication token provided.")
 
-    settings = UserSetting.query.filter_by(userID=user_id).first()
+    try:
+        id_token = id_token.split(' ').pop()
+        decoded_token = auth.verify_id_token(id_token)
+        return decoded_token['uid']
+    except exceptions.FirebaseError:
+        abort(401, description="Invalid or expired authentication token.")
 
-    if settings:
-        settings.notificationFrequency = notification_frequency
-        settings.vibration = vibration
-        settings.sound = sound
-        db.session.commit()
+@app.route('/api/settings', methods=['GET'])
+def get_user_settings():
+    try:
+        firebase_uid = get_firebase_uid_from_token()
+        user_id = get_user_id_from_firebase_uid(firebase_uid)
 
-        message = {
-            'userID': user_id,
-            'notificationFrequency': notification_frequency,
-            'vibration': vibration,
-            'sound': sound
-        }
-        publish_message('user_settings_channel', message)
+        if not user_id:
+            abort(404, description="User not found.")
 
-        return jsonify({"message": "Settings updated successfully"}), 200
-    else:
-        return jsonify({"error": "Settings not found"}), 404
+        settings = UserSetting.query.filter_by(userID=user_id).first()
+
+        if settings:
+            return jsonify({
+                "settingID": settings.settingID,
+                "userID": settings.userID,
+                "notificationFrequency": settings.notificationFrequency,
+                "vibration": settings.vibration,
+                "sound": settings.sound,
+            }), 200
+        else:
+            return jsonify({"error": "Settings not found"}), 404
+    except Exception as e:
+        abort(500, description=str(e))
+
+@app.route('/api/settings', methods=['POST'])
+def update_user_settings():
+    try:
+        firebase_uid = get_firebase_uid_from_token()
+        user_id = get_user_id_from_firebase_uid(firebase_uid)
+
+        if not user_id:
+            abort(404, description="User not found.")
+
+        data = request.get_json()
+        notification_frequency = data.get('notificationFrequency')
+        vibration = data.get('vibration')
+        sound = data.get('sound')
+
+        settings = UserSetting.query.filter_by(userID=user_id).first()
+
+        if settings:
+            settings.notificationFrequency = notification_frequency
+            settings.vibration = vibration
+            settings.sound = sound
+            db.session.commit()
+
+            message = {
+                'userID': user_id,
+                'notificationFrequency': notification_frequency,
+                'vibration': vibration,
+                'sound': sound
+            }
+            publish_message('user_settings_channel', message)
+
+            return jsonify({"message": "Settings updated successfully"}), 200
+        else:
+            return jsonify({"error": "Settings not found"}), 404
+    except Exception as e:
+        abort(500, description=str(e))

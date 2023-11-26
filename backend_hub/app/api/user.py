@@ -74,3 +74,9 @@ def login_user():
         return jsonify({'error': 'User does not exist'}), 400
 
     return jsonify({"message": "User logged in successfully", "firebaseUID": firebase_user_id}), 200
+
+#there is no need for this route because the firebase on the client side handles the logout
+@app.route('/api/logout', methods=['POST'])
+def logout_user():
+    # Instruct the client to clear the Firebase token
+    return jsonify({"message": "Logout successful. Please clear the client-side token."}), 200

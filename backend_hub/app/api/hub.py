@@ -1,8 +1,9 @@
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from app import app, mysql
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from dotenv import load_dotenv
+from firebase_admin import auth, exceptions
 import os
 
 # Load environment variables form .env file
@@ -22,46 +23,83 @@ pubnub = PubNub(pnconfig)
 def publish_message(channel, message):
     pubnub.publish().channel(channel).message(message).sync()
 
-@app.route('/api/settings/<int:user_id>', methods=['GET'])
-def get_user_settings(user_id):
+def get_user_id_from_firebase_uid(firebase_uid):
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT * FROM UserSetting WHERE userID = %s', (user_id,))
-    settings = cursor.fetchone()
+    cursor.execute('SELECT userID FROM User WHERE firebaseUID = %s', (firebase_uid,))
+    result = cursor.fetchone()
     cursor.close()
+    return result[0] if result else None
 
-    if settings:
-        return jsonify({
-            "settingID": settings[0],
-            "userID": settings[1],
-            "notificationFrequency": settings[2],
-            "vibration": settings[3],
-            "sound": settings[4],
-        }), 200
-    else:
-        return jsonify({"error": "Settings not found"}), 404
+def get_firebase_uid_from_token():
+    id_token = request.headers.get('Authorization')
+    if not id_token:
+        abort(401, description="No authentication token provided.")
 
-@app.route('/api/settings/<int:user_id>', methods=['POST'])
-def update_user_settings(user_id):
-    data = request.get_json()
-    notification_frequency = data.get('notificationFrequency')
-    vibration = data.get('vibration')
-    sound = data.get('sound')
+    try:
+        id_token = id_token.split(' ').pop()
+        decoded_token = auth.verify_id_token(id_token)
+        return decoded_token['uid']
+    except exceptions.FirebaseError:
+        abort(401, description="Invalid or expired authentication token.")
 
-    cursor = mysql.connection.cursor()
-    cursor.execute('''
-        UPDATE UserSetting 
-        SET notificationFrequency = %s, vibration = %s, sound = %s 
-        WHERE userID = %s
-        ''', (notification_frequency, vibration, sound, user_id))
-    mysql.connection.commit()
+@app.route('/api/settings', methods=['GET'])
+def get_user_settings():
+    try:
+        firebase_uid = get_firebase_uid_from_token()
+        user_id = get_user_id_from_firebase_uid(firebase_uid)
 
-    message = {
-        'userID': user_id,
-        'notificationFrequency': notification_frequency,
-        'vibration': vibration,
-        'sound': sound
-    }
-    publish_message('user_settings_channel', message)
+        if not user_id:
+            abort(404, description="User not found.")
 
-    cursor.close()
-    return jsonify({"message": "Settings updated successfully"}), 200
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT * FROM UserSetting WHERE userID = %s', (user_id,))
+        settings = cursor.fetchone()
+        cursor.close()
+
+        if settings:
+            return jsonify({
+                "settingID": settings[0],
+                "userID": settings[1],
+                "notificationFrequency": settings[2],
+                "vibration": settings[3],
+                "sound": settings[4],
+            }), 200
+        else:
+            return jsonify({"error": "Settings not found"}), 404
+    except Exception as e:
+        abort(500, description=str(e))
+
+@app.route('/api/settings', methods=['POST'])
+def update_user_settings():
+    try:
+        firebase_uid = get_firebase_uid_from_token()
+        user_id = get_user_id_from_firebase_uid(firebase_uid)
+
+        if not user_id:
+            abort(404, description="User not found.")
+
+        data = request.get_json()
+        notification_frequency = data.get('notificationFrequency')
+        vibration = data.get('vibration')
+        sound = data.get('sound')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+            UPDATE UserSetting 
+            SET notificationFrequency = %s, vibration = %s, sound = %s 
+            WHERE userID = %s
+            ''', (notification_frequency, vibration, sound, user_id))
+        mysql.connection.commit()
+
+        message = {
+            'userID': user_id,
+            'notificationFrequency': notification_frequency,
+            'vibration': vibration,
+            'sound': sound
+        }
+        publish_message('user_settings_channel', message)
+
+        cursor.close()
+        return jsonify({"message": "Settings updated successfully"}), 200
+    except Exception as e:
+        abort(500, description=str(e))
