@@ -9,11 +9,12 @@ import io.reactivex.Single
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 interface ApiService {
 
     @GET("/api/home")
-    fun getMeasures(): Single<List<HomeData>>
+    fun getAirQualityData(@Header("X-Access-Token") token: String): Call<HomeData>
 
     @POST("/api/register")
     fun registerUser(@Body request: RegisterRequest): Single<RegisterResponse>

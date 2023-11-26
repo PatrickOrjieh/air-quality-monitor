@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,43 +28,62 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.aerosense_app.HomeData
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 
 @Composable
-fun dataScreen(navController: NavHostController, repository: Repository) {
+fun dataScreen(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var percent by remember { mutableIntStateOf(54) }
     var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var time by remember { mutableStateOf("") }
-    var pmTwo by remember { mutableIntStateOf(0) }
+    var pmTwo by remember { mutableFloatStateOf(0.0F) }
     var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var pmTen by remember { mutableIntStateOf(0) }
+    var pmTen by remember { mutableFloatStateOf(0.0F) }
     var pmTenColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var voc by remember { mutableIntStateOf(0) }
+    var voc by remember { mutableFloatStateOf(0.0F) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var isMenuExpanded by remember { mutableStateOf(false) }
-    var data by remember { mutableStateOf<List<HomeData>>(emptyList()) }
 
-    percent = 58
-    time = "12:56"
-    pmTwo = 18
-    pmTen = 42
-    voc = 505
+//    percent = 58
+//    time = "12:56"
+//    pmTwo = 18.0F
+//    pmTen = 42.0F
+//    voc = 505.0F
 
-    LaunchedEffect(Unit) {
-        repository.getHomeData()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result ->
-                data = result
-            }, { error ->
-                error.printStackTrace()
-            })
+// Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        repository.fetchAirQualityData(token,
+            onSuccess = { homeData ->
+                if (homeData != null) {
+                    time = homeData.last_updated
+                }
+                if (homeData != null) {
+                    pmTwo = homeData.pm25
+                }
+                if (homeData != null) {
+                    pmTen = homeData.pm10
+                }
+                if (homeData != null) {
+                    voc = homeData.voc_level
+                }
+
+                percent = calculateAirQualityPercentage(voc.toDouble()).toInt()
+
+                Log.d("DataScreen", "Air quality data: $homeData")
+            },
+            onError = { errorMessage ->
+                Log.d("DataScreen", "Error: $errorMessage")
+            }
+        )
+    } else {
+        Log.d("DataScreen", "Error: Firebase token is null or blank")
     }
 
     NavBar(navController)
@@ -97,10 +117,10 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
             //Make the color green
             percentageColor = Color(0xffff50f413 )
         }
-        else if(percent < 80 && percent > 64) {
+        else if(percent < 80 && percent >= 60) {
             percentageColor = Color(0xffffa629)
         }
-        else if(percent < 65 && percent > 30){
+        else if(percent < 60 && percent >= 40){
             percentageColor = Color(0xfff24822)
         }
         else{
@@ -108,7 +128,7 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
         }
 
         Text(
-            text = "$percent% CLean",
+            text = "$percent% Clean",
             color = percentageColor,
             lineHeight = 3.75.em,
             style = TextStyle(
@@ -180,7 +200,7 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
         else if(pmTwo > 10 && pmTwo <= 20) {
             pmTwoColor = Color(0xffffa629)
         }
-        else if(pmTwo < 20 && pmTwo >= 25){
+        else if(pmTwo > 20 && pmTwo <= 25){
             pmTwoColor = Color(0xfff24822)
         }
         else{
@@ -226,7 +246,7 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
         else if(pmTen > 20 && pmTen < 40) {
             pmTenColor = Color(0xffffa629)
         }
-        else if(pmTen < 40 && pmTen > 50){
+        else if(pmTen > 40 && pmTen < 50){
             pmTenColor = Color(0xfff24822)
         }
         else{
@@ -235,7 +255,7 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
 
         Text(
             text = pmTen.toString() + "µg/m^3",
-            color = Color(0xffffa629),
+            color = pmTenColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
@@ -288,14 +308,14 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
         )
 
         //If statements to change the color of the air quality measures
-        if(voc >=0 && voc <= 200){
+        if(voc > 0.0 && voc <= 0.5){
             //Make the color green
             vocColor = Color(0xffff50f413 )
         }
-        else if(voc > 200 && voc <= 500) {
+        else if(voc > 0.5 && voc <= 1.0) {
             vocColor = Color(0xffffa629)
         }
-        else if(voc < 500 && voc >= 1000){
+        else if(voc > 1.0 && voc <= 2.0){
             vocColor = Color(0xfff24822)
         }
         else{
@@ -304,7 +324,7 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
 
         Text(
             text = "$voc ppb",
-            color = Color(0xfff24822),
+            color = vocColor,
             lineHeight = 3.75.em,
             style = TextStyle(
                 fontSize = 20.sp,
@@ -363,4 +383,13 @@ fun dataScreen(navController: NavHostController, repository: Repository) {
         }
     }
 
+}
+
+fun calculateAirQualityPercentage(voc: Double): Double {
+    return when {
+        voc < 0.5 -> 100.0 - (voc / 0.5 * 20) // 80-100%
+        voc in 0.5..1.0 -> 60.0 - ((voc - 0.5) / 0.5 * 20) // 40-60%
+        voc in 1.0..2.0 -> 40.0 - ((voc - 1.0) / 1.0 * 40) // 0-40%
+        else -> 0.0 // 0%
+    }
 }

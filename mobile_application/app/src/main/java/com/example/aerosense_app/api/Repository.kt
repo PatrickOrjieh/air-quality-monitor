@@ -1,5 +1,6 @@
 package com.example.aerosense_app.api
 
+import android.util.Log
 import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
@@ -7,10 +8,34 @@ import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
 import io.reactivex.Single
 import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class Repository(private val apiService: ApiService) {
-    fun getHomeData(): Single<List<HomeData>> {
-        return apiService.getMeasures()
+
+    fun getAirQualityData(token: String): Call<HomeData> {
+        return apiService.getAirQualityData(token)
+    }
+
+    fun fetchAirQualityData(token: String, onSuccess: (HomeData?) -> Unit, onError: (String) -> Unit) {
+        val call = getAirQualityData(token)
+        call.enqueue(object : Callback<HomeData> {
+            override fun onResponse(call: Call<HomeData>, response: Response<HomeData>) {
+                Log.d("RepositoryResponse", response.toString())
+                if (response.isSuccessful) {
+                    onSuccess(response.body())
+                    Log.d("Repository", "success: ${response.body()}")
+                } else {
+                    Log.d("Repository", "onResponse: ${response.code()}")
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<HomeData>, t: Throwable) {
+                Log.d("Repository", "onResponse: ${t.message}")
+                onError("Failure: ${t.message}")
+            }
+        })
     }
 
     fun registerData(data: RegisterRequest): Single<RegisterResponse> {

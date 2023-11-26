@@ -35,7 +35,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
@@ -45,13 +44,12 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(navController: NavHostController, repository: Repository) {
+fun Login(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf<String?>(null) }
     var validEmail by remember { mutableStateOf(false) }
     var validPassword by remember { mutableStateOf(false) }
-    val firebaseViewModel: FirebaseViewModel = viewModel()
 
     Box(
         modifier = Modifier
@@ -220,11 +218,28 @@ fun Login(navController: NavHostController, repository: Repository) {
                         FirebaseAuth
                             .getInstance()
                             .signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener{
-                                if(it.isSuccessful){
-                                    Log.d("Login", "Login successful")
-                                    navController.navigate(Screen.DataScreen.name)
+                            .addOnCompleteListener { signInTask ->
+                                if (signInTask.isSuccessful) {
+                                    // Login successful, get the user and ID token
+                                    val user = FirebaseAuth.getInstance().currentUser
+                                    user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                                        if (tokenTask.isSuccessful) {
+                                            val idToken = tokenTask.result?.token
+
+                                            Log.d("LoginToken", "idToken: $idToken")
+
+                                            // Set the token in the ViewModel
+                                            firebaseModel.firebaseToken = idToken
+
+                                            // Navigate to the data screen
+                                            navController.navigate(Screen.DataScreen.name)
+                                        } else {
+                                            // Handle error in getting ID token
+                                            loginError = "Error in getting Firebase ID token"
+                                        }
+                                    }
                                 } else {
+                                    // Login failed
                                     Log.d("Login", "Login failed")
                                     loginError = "Invalid login details"
                                 }
@@ -277,33 +292,3 @@ fun Login(navController: NavHostController, repository: Repository) {
         }
     }
 }
-
-//private fun getUserInformation() {
-//    val auth = FirebaseAuth.getInstance()
-//    val user = auth.currentUser
-//
-//    if (user != null) {
-//        // User is signed in
-//        val uid = user.uid
-//        val email = user.email
-//        val displayName = user.displayName
-//
-//        // Access other user details as needed
-//        // ...
-//
-//        // To get the ID token
-//        user.getIdToken(true).addOnCompleteListener { task ->
-//            if (task.isSuccessful) {
-//                val idToken = task.result?.token
-//                // Use the ID token as needed
-//                Log.d("IDToken", "ID Token: $idToken")
-//            } else {
-//                // Handle error
-//                val exception = task.exception
-//                // ...
-//            }
-//        }
-//    } else {
-//        // User is not signed in
-//    }
-//}

@@ -7,4 +7,6 @@ import androidx.lifecycle.ViewModel
 
 class FirebaseViewModel : ViewModel() {
     var firebaseToken: String? by mutableStateOf(null)
+
+
 }

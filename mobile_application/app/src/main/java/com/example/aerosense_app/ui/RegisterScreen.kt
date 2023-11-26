@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.Screen
@@ -46,7 +47,7 @@ import io.reactivex.schedulers.Schedulers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Register(navController: NavHostController, repository: Repository) {
+fun Register(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -54,8 +55,6 @@ fun Register(navController: NavHostController, repository: Repository) {
     var modelNum by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
-
-
 
     Box(
         modifier = Modifier
@@ -328,6 +327,11 @@ fun Register(navController: NavHostController, repository: Repository) {
                                         user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
                                             if (tokenTask.isSuccessful) {
                                                 val idToken = tokenTask.result?.token
+
+                                                Log.d("RegisterToken", "ID Token: $idToken")
+
+                                                firebaseModel.firebaseToken = idToken
+
                                                 // Now send the ID token and model number to your backend
                                                 sendTokenToBackend(idToken, modelNum, navController, repository)
                                             } else {
