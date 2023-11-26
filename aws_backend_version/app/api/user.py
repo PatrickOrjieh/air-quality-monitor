@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app import app, db
-from app.models import User, Hub
+from app.models import User, Hub, UserSetting
 from werkzeug.security import generate_password_hash
 import firebase_admin
 from firebase_admin import auth, credentials
@@ -43,6 +43,11 @@ def register_user():
         # Create a new hub associated with the user
         new_hub = Hub(modelNumber=model_number, userID=new_user.userID, batteryLevel=100)
         db.session.add(new_hub)
+        db.session.commit()
+
+        #insert into user_settings the default settings
+        new_user_settings = UserSetting(userID=new_user.userID, notificationFrequency="only when critical", vibration=True, sound=True)
+        db.session.add(new_user_settings)
         db.session.commit()
 
         return jsonify({"message": "User registered successfully", "userID": new_user.userID}), 201
