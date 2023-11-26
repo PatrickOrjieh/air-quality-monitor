@@ -44,6 +44,12 @@ def register_user():
         mysql.connection.commit()
         cursor.close()
 
+        # Insert default user settings
+        cursor = mysql.connection.cursor()
+        cursor.execute('INSERT INTO UserSetting (userID, notificationFrequency, vibration, sound) VALUES (%s, %s, %s, %s)', (user_id, "only when critical", True, True))
+        mysql.connection.commit()
+        cursor.close()
+
         return jsonify({"message": "User registered successfully", "userID": user_id}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
