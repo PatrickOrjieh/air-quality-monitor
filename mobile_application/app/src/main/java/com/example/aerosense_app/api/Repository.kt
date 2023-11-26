@@ -14,7 +14,7 @@ class Repository(private val apiService: ApiService) {
     }
 
     fun registerData(data: RegisterRequest): Single<RegisterResponse> {
-        val request = RegisterRequest(data.name, data.email, data.password, data.confirmPassword, data.modelNumber)
+        val request = RegisterRequest(firebaseToken = data.firebaseToken, modelNumber = data.modelNumber)
         return apiService.registerUser(request)
     }
 

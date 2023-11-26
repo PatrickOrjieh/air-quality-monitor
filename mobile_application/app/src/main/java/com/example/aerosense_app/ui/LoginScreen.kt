@@ -217,9 +217,6 @@ fun Login(navController: NavHostController, repository: Repository) {
                         email = email.trim()
                         Log.d("Login", "Email: $email")
 
-                        // Get Firebase Auth instance
-                        val auth = FirebaseAuth.getInstance()
-
                         FirebaseAuth
                             .getInstance()
                             .signInWithEmailAndPassword(email, password)
