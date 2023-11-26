@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -208,6 +209,7 @@ fun Login(navController: NavHostController) {
                     onClick = {
 
                         if (validEmail && validPassword) {
+
                             navController.navigate(Screen.DataScreen.name)
                         } else {
                             loginError = "Invalid login details"

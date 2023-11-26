@@ -4,11 +4,14 @@ import Login
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.codingwithmitch.composegooglemaps.compose.Location
+import com.example.aerosense_app.api.Repository
+import com.example.aerosense_app.network.RetrofitClient
 import com.example.aerosense_app.ui.AsthmaProfile
 import com.example.aerosense_app.ui.Register
 import com.example.aerosense_app.ui.ResetPassword
@@ -25,10 +28,10 @@ enum class Screen {
     AsthmaProfile,
 }
 
-//private val viewModel: MapViewModel by viewModels()
-
         @Composable
         fun AerosenseApp(viewModel: MapViewModel){
+            val repository = remember {Repository(apiService = RetrofitClient.create())}
+
 
             Surface(
                 modifier = Modifier.fillMaxSize(),
@@ -37,8 +40,8 @@ enum class Screen {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Screen.Login.name) {
                     composable("Login") { Login(navController) }
-                    composable("Register") { Register(navController) }
-                    composable("dataScreen") { dataScreen(navController) }
+                    composable("Register") { Register(navController, repository) }
+                    composable("dataScreen") { dataScreen(navController, repository) }
                     composable("Settings") { Settings(navController) }
                     composable("Location") { Location(
                 state = viewModel.state.value,

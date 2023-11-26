@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,12 +27,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 @Composable
-fun dataScreen(navController: NavHostController) {
+fun dataScreen(navController: NavHostController, repository: Repository) {
     var percent by remember { mutableIntStateOf(54) }
     var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var time by remember { mutableStateOf("") }
@@ -42,12 +47,24 @@ fun dataScreen(navController: NavHostController) {
     var voc by remember { mutableIntStateOf(0) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var isMenuExpanded by remember { mutableStateOf(false) }
+    var data by remember { mutableStateOf<List<HomeData>>(emptyList()) }
 
     percent = 58
     time = "12:56"
     pmTwo = 18
     pmTen = 42
     voc = 505
+
+    LaunchedEffect(Unit) {
+        repository.getHomeData()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ result ->
+                data = result
+            }, { error ->
+                error.printStackTrace()
+            })
+    }
 
     NavBar(navController)
 
@@ -106,7 +123,7 @@ fun dataScreen(navController: NavHostController) {
     Box() {
         //Centered text underneath the circle box
         Text(
-            text = "Updated: " + time,
+            text = "Updated: $time",
             color = Color(0xff1e1e1e),
             lineHeight = 3.75.em,
             style = TextStyle(
