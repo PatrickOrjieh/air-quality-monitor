@@ -5,12 +5,15 @@ import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
+import com.example.aerosense_app.SettingsRequest
+import com.example.aerosense_app.SettingsResponse
 import io.reactivex.Single
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+
 interface ApiService {
 
     @GET("/api/home")
@@ -21,5 +24,11 @@ interface ApiService {
 
     @POST("login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
+
+    @GET("/api/settings")
+    fun getUserSettings(): Call<SettingsRequest>
+
+    @POST("updateUserSettings")
+    fun updateUserSettings(@Body requestBody: Map<String, Object>): Call<SettingsResponse>
 
 }

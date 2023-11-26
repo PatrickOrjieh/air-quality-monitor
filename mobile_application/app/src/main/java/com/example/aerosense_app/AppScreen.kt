@@ -44,7 +44,7 @@ enum class Screen {
                     composable("Login") { Login(navController, repository, firebaseModel) }
                     composable("Register") { Register(navController, repository, firebaseModel) }
                     composable("dataScreen") { dataScreen(navController, repository, firebaseModel) }
-                    composable("Settings") { Settings(navController) }
+                    composable("Settings") { Settings(navController, repository) }
                     composable("Location") { Location(
                 state = viewModel.state.value,
                 setupClusterManager = viewModel::setupClusterManager,

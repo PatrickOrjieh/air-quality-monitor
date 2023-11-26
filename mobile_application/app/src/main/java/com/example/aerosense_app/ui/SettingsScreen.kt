@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,18 +35,50 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.SettingsResponse
+import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import com.example.aerosense_app.ui.components.SelectionDropDown
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun Settings(navController: NavHostController){
-    var connected by remember { mutableStateOf(false) }
+fun Settings(navController: NavHostController, repository: Repository){
+    var connected by remember { mutableStateOf(true) }
     var battery by remember { mutableIntStateOf(0) }
-    var vibration by remember { mutableStateOf(false) }
-    var sound by remember { mutableStateOf(false) }
+    var vibration by remember { mutableStateOf(true) }
+    var sound by remember { mutableStateOf(true) }
     val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
 
     battery = 65
+
+    // Observe changes in sound value and update the server accordingly
+    LaunchedEffect(sound) {
+        val requestBody = mapOf("sound" to sound)
+
+        val call = repository.updateUserSettings(requestBody)
+        call.enqueue(object : Callback<SettingsResponse> {
+            override fun onResponse(
+                call: Call<SettingsResponse>,
+                response: Response<SettingsResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val settingsResponse = response.body()
+                    Log.d("Settings", "success: $settingsResponse")
+                } else {
+                    val errorMessage = "Failed to update settings"
+                    Log.d("Settings", "onResponse: $errorMessage")
+                }
+            }
+
+            override fun onFailure(call: Call<SettingsResponse>, t: Throwable) {
+                val errorMessage = "Network error: ${t.message}"
+                Log.d("Settings", "onResponse: $errorMessage")
+            }
+        })
+    }
+
 
     NavBar(navController)
 
@@ -467,8 +501,9 @@ fun Settings(navController: NavHostController){
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium
                     ),
-                    modifier = Modifier.padding(start = 7.dp, top = 5.dp)
-                        .clickable{
+                    modifier = Modifier
+                        .padding(start = 7.dp, top = 5.dp)
+                        .clickable {
                             navController.navigate(Screen.ResetPassword.name)
                         }
                 )
@@ -508,7 +543,8 @@ fun Settings(navController: NavHostController){
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 ),
-                modifier = Modifier.padding(start = 20.dp, top = 10.dp)
+                modifier = Modifier
+                    .padding(start = 20.dp, top = 10.dp)
                     .clickable {
                         navController.navigate(Screen.Login.name)
                     }
