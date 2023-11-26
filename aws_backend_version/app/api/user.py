@@ -17,38 +17,38 @@ def index():
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
-    name = data.get('name', '').strip()
-    password = data.get('password', '').strip()
-    confirm_password = data.get('confirmPassword', '').strip()
-    email = data.get('email', '').strip()
-    model_number = data.get('modelNumber', '').strip()
+    token = data.get('firebaseToken')
+    model_number = data.get('modelNumber')
 
-    # Input validation
-    if not name or not email or not model_number or not password or not confirm_password:
+    if not token or not model_number:
         return jsonify({"error": "Missing required fields"}), 400
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return jsonify({"error": "Invalid email format"}), 400
-    
-    if password != confirm_password:
-        return jsonify({"error": "Passwords do not match"}), 400
-
-    hashed_password = generate_password_hash(password)
 
     try:
-        user_record = auth.create_user(email=email)
-        firebase_user_id = user_record.uid
+        # Verify the Firebase ID token and get the user's info
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        email = decoded_token['email']
+        name = decoded_token.get('name', email)
 
-        new_user = User(name=name, email=email, password=hashed_password, firebaseUID=firebase_user_id)
+        # Check if user already exists
+        existing_user = User.query.filter_by(firebaseUID=uid).first()
+        if existing_user:
+            return jsonify({"error": "User already exists"}), 400
+
+        # Create new user
+        new_user = User(name=name, email=email, firebaseUID=uid)
         db.session.add(new_user)
         db.session.commit()
 
+        # Create a new hub associated with the user
         new_hub = Hub(modelNumber=model_number, userID=new_user.userID, batteryLevel=100)
         db.session.add(new_hub)
         db.session.commit()
 
-        return jsonify({"message": "User registered successfully", "firebaseUID": firebase_user_id, "userID": new_user.userID}), 201
+        return jsonify({"message": "User registered successfully", "userID": new_user.userID}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
 
 @app.route('/api/login2', methods=['POST'])
 def login_user2():
