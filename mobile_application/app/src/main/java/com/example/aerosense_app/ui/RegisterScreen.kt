@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,12 +36,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
+import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.api.Repository
+import com.google.firebase.auth.FirebaseAuth
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Register(navController: NavHostController) {
+fun Register(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -48,8 +55,6 @@ fun Register(navController: NavHostController) {
     var modelNum by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
-
-
 
     Box(
         modifier = Modifier
@@ -292,12 +297,57 @@ fun Register(navController: NavHostController) {
                             error = "Invalid register details"
                         }
 
+//                        if (error == null && enteredName && enteredEmail && enteredPassword && enteredConfirm && enteredModelNum) {
+//                            repository.registerData(RegisterRequest(name, email, password, confirm, modelNum))
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe({ response ->
+//                                    // Handle the successful response here
+//                                    Log.d("Register", "Response: $response")
+//                                }, { error ->
+//                                    // Handle the error here
+//                                    Log.d("RegisterFail", "Error: $error")
+//                                })
+//
+//                            navController.navigate(Screen.DataScreen.name)
+//
+//                        }
+//                        else {
+//                            error = "Invalid register details"
+//                        }
+
                         if (error == null && enteredName && enteredEmail && enteredPassword && enteredConfirm && enteredModelNum) {
-                            navController.navigate(Screen.DataScreen.name)
-                        }
-                        else {
+                            val auth = FirebaseAuth.getInstance()
+
+                            auth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        // User successfully registered and logged in
+                                        val user = auth.currentUser
+                                        user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                                            if (tokenTask.isSuccessful) {
+                                                val idToken = tokenTask.result?.token
+
+                                                Log.d("RegisterToken", "ID Token: $idToken")
+
+                                                firebaseModel.firebaseToken = idToken
+
+                                                // Now send the ID token and model number to your backend
+                                                sendTokenToBackend(idToken, modelNum, navController, repository)
+                                            } else {
+                                                // Handle error in getting ID token
+                                                error = "Error in getting Firebase ID token"
+                                            }
+                                        }
+                                    } else {
+                                        // Handle registration error
+                                        error = task.exception?.message ?: "Registration failed"
+                                    }
+                                }
+                        } else {
                             error = "Invalid register details"
                         }
+
                     },
                     modifier = Modifier
                         .height(53.dp),
@@ -329,4 +379,20 @@ fun Register(navController: NavHostController) {
     }
 
 
+}
+
+private fun sendTokenToBackend(token: String?, modelNum: String, navController: NavHostController, repository: Repository) {
+    if (token != null) {
+        // Assuming `repository.registerData` is your method to send data to the backend
+        repository.registerData(RegisterRequest(token, modelNum))
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                // Handle successful response
+                navController.navigate(Screen.DataScreen.name)
+            }, { error ->
+                // Handle error
+                Log.d("BackendRegisterFail", "Error: $error")
+            })
+    }
 }

@@ -8,12 +8,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import com.example.aerosense_app.api.ApiService
+import com.example.aerosense_app.network.RetrofitClient
 import com.example.aerosense_app.ui.theme.AeroSense_AppTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
 //Parts of code taken from: https://github.com/mitchtabian/Google-Maps-Compose
 class MainActivity : ComponentActivity() {
+    val apiService: ApiService by lazy { RetrofitClient.create() }
 
     private val requestPermissionLauncher =
         registerForActivityResult(
