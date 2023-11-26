@@ -39,7 +39,7 @@ enum class Screen {
                 // A surface container using the 'background' color from the theme
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Screen.Login.name) {
-                    composable("Login") { Login(navController) }
+                    composable("Login") { Login(navController, repository) }
                     composable("Register") { Register(navController, repository) }
                     composable("dataScreen") { dataScreen(navController, repository) }
                     composable("Settings") { Settings(navController) }

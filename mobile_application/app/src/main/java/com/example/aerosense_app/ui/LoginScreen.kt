@@ -1,4 +1,5 @@
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,18 +35,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.api.Repository
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(navController: NavHostController) {
+fun Login(navController: NavHostController, repository: Repository) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf<String?>(null) }
     var validEmail by remember { mutableStateOf(false) }
     var validPassword by remember { mutableStateOf(false) }
+    val firebaseViewModel: FirebaseViewModel = viewModel()
 
     Box(
         modifier = Modifier
@@ -110,7 +116,7 @@ fun Login(navController: NavHostController) {
                 Spacer(modifier = Modifier.width(8.dp))
 
                 TextField(
-                    value = email,
+                    value = email.trim(),
                     onValueChange = {
                         email = it
                         // Perform email validation
@@ -208,12 +214,37 @@ fun Login(navController: NavHostController) {
                 Button(
                     onClick = {
 
-                        if (validEmail && validPassword) {
+                        email = email.trim()
+                        Log.d("Login", "Email: $email")
 
-                            navController.navigate(Screen.DataScreen.name)
-                        } else {
-                            loginError = "Invalid login details"
-                        }
+                        // Get Firebase Auth instance
+                        val auth = FirebaseAuth.getInstance()
+
+                        FirebaseAuth
+                            .getInstance()
+                            .signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener{
+                                if(it.isSuccessful){
+                                    Log.d("Login", "Login successful")
+                                    navController.navigate(Screen.DataScreen.name)
+                                } else {
+                                    Log.d("Login", "Login failed")
+                                    loginError = "Invalid login details"
+                                }
+                            }
+                            .addOnFailureListener {
+                                Log.d("Login", "Login failed: ${it.localizedMessage}")
+                                loginError = "Invalid login details"
+                            }
+
+
+
+//                        if (validEmail && validPassword) {
+//
+//                            navController.navigate(Screen.DataScreen.name)
+//                        } else {
+//                            loginError = "Invalid login details"
+//                        }
                     },
                     modifier = Modifier
                         .height(53.dp)
@@ -249,3 +280,33 @@ fun Login(navController: NavHostController) {
         }
     }
 }
+
+//private fun getUserInformation() {
+//    val auth = FirebaseAuth.getInstance()
+//    val user = auth.currentUser
+//
+//    if (user != null) {
+//        // User is signed in
+//        val uid = user.uid
+//        val email = user.email
+//        val displayName = user.displayName
+//
+//        // Access other user details as needed
+//        // ...
+//
+//        // To get the ID token
+//        user.getIdToken(true).addOnCompleteListener { task ->
+//            if (task.isSuccessful) {
+//                val idToken = task.result?.token
+//                // Use the ID token as needed
+//                Log.d("IDToken", "ID Token: $idToken")
+//            } else {
+//                // Handle error
+//                val exception = task.exception
+//                // ...
+//            }
+//        }
+//    } else {
+//        // User is not signed in
+//    }
+//}

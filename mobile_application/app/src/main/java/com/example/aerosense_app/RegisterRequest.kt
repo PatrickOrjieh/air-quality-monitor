@@ -1,5 +1,5 @@
 package com.example.aerosense_app
-data class RegistrationData(
+data class RegisterRequest(
         val name: String,
         val email: String,
         val password: String,
