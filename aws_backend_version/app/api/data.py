@@ -7,27 +7,27 @@ from sqlalchemy import desc
 
 @app.route('/api/home', methods=['GET'])
 def get_air_quality_data():
-    # Firebase token verification
-    token = request.headers.get('Authorization')
+    # Retrieve Firebase token from the request headers
+    token = request.headers.get('X-Access-Token')
     if not token:
-        return jsonify({'error': 'Authorization token is missing'}), 401
+        return jsonify({'error': 'Firebase ID token is required'}), 401
 
     try:
-        # Verify the Firebase ID token and get the user's information
+        # Verify the Firebase ID token and get the Firebase UID
         decoded_token = auth.verify_id_token(token)
         firebase_user_id = decoded_token['uid']
 
-        # Fetch the user associated with the Firebase UID
+        # Fetch the user from the database using the Firebase UID
         user = User.query.filter_by(firebaseUID=firebase_user_id).first()
 
         if not user:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'error': 'User not found in the database'}), 404
 
-        # Fetch the hub associated with the user
+        # Fetch the user's associated hub from the database
         hub = Hub.query.filter_by(userID=user.userID).first()
 
         if not hub:
-            return jsonify({'error': 'No hub associated with this user'}), 404
+            return jsonify({'error': 'No hub associated with this user in the database'}), 404
 
         # Fetch the latest air quality measurement for the user's hub
         result = AirQualityMeasurement.query.filter_by(hubID=hub.hubID).order_by(desc(AirQualityMeasurement.timestamp)).first()
@@ -43,9 +43,9 @@ def get_air_quality_data():
             }
             return jsonify(response_data), 200
         else:
-            return jsonify({'message': 'No air quality data available for this hub.'}), 404
+            return jsonify({'message': 'No air quality data available for this hub'}), 404
 
     except firebase_admin.exceptions.FirebaseError:
-        return jsonify({'error': 'Invalid Firebase ID token'}), 401
+        return jsonify({'error': 'Invalid Firebase ID token provided'}), 401
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An unexpected error occurred: ' + str(e)}), 500

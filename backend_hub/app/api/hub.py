@@ -31,13 +31,12 @@ def get_user_id_from_firebase_uid(firebase_uid):
     return result[0] if result else None
 
 def get_firebase_uid_from_token():
-    id_token = request.headers.get('Authorization')
-    if not id_token:
+    token = request.headers.get('X-Access-Token')
+    if not token:
         abort(401, description="No authentication token provided.")
 
     try:
-        id_token = id_token.split(' ').pop()
-        decoded_token = auth.verify_id_token(id_token)
+        decoded_token = auth.verify_id_token(token)
         return decoded_token['uid']
     except exceptions.FirebaseError:
         abort(401, description="Invalid or expired authentication token.")
