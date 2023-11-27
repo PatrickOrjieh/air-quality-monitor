@@ -31,10 +31,4 @@ interface ApiService {
     fun updateUserSettings(@Body settings: SettingsRequest): Call<SettingsResponse>
 
 
-    @GET("/api/settings")
-    fun getUserSettings(): Call<SettingsRequest>
-
-    @POST("updateUserSettings")
-    fun updateUserSettings(@Body requestBody: Map<String, Object>): Call<SettingsResponse>
-
 }

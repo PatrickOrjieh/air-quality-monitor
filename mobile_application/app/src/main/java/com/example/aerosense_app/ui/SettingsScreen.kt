@@ -35,10 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
-<<<<<<< Updated upstream
-=======
 import com.example.aerosense_app.SettingsRequest
->>>>>>> Stashed changes
 import com.example.aerosense_app.SettingsResponse
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
@@ -46,11 +43,10 @@ import com.example.aerosense_app.ui.components.SelectionDropDown
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-<<<<<<< Updated upstream
-=======
+
 
 //Github copilot used when writing some of this code
->>>>>>> Stashed changes
+
 
 @Composable
 fun Settings(navController: NavHostController, repository: Repository){
@@ -64,11 +60,9 @@ fun Settings(navController: NavHostController, repository: Repository){
 
     // Observe changes in sound value and update the server accordingly
     LaunchedEffect(sound) {
-<<<<<<< Updated upstream
-        val requestBody = mapOf("sound" to sound)
-=======
+
         val requestBody = SettingsRequest("Only When Critical", vibration, sound)
->>>>>>> Stashed changes
+
 
         val call = repository.updateUserSettings(requestBody)
         call.enqueue(object : Callback<SettingsResponse> {
