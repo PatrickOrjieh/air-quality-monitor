@@ -15,36 +15,42 @@ def index():
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-    confirm_password = data.get('confirmPassword', '')
-    model_number = data.get('modelNumber', '').strip()
+    token = data.get('firebaseToken')
+    model_number = data.get('modelNumber')
 
-    # Input validation
-    if not name or not email or not model_number:
+    if not token or not model_number:
         return jsonify({"error": "Missing required fields"}), 400
-    if password != confirm_password:
-        return jsonify({"error": "Passwords do not match"}), 400
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return jsonify({"error": "Invalid email format"}), 400
-
-    hashed_password = generate_password_hash(password)
 
     try:
-        user_record = auth.create_user(email=email, password=password)
-        firebase_user_id = user_record.uid
+        # Verify the Firebase ID token and get the user's info
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        email = decoded_token['email']
+        name = decoded_token.get('name', email)  # Use email as name if name not provided
 
+        # Check if user already exists
         cursor = mysql.connection.cursor()
-        cursor.execute('INSERT INTO User (name, email, password, firebaseUID) VALUES (%s, %s, %s, %s)', (name, email, hashed_password, firebase_user_id))
-        mysql.connection.commit()
+        cursor.execute('SELECT * FROM User WHERE firebaseUID = %s', (uid,))
+        if cursor.fetchone():
+            return jsonify({"error": "User already exists"}), 400
 
+        # Insert new user into MySQL database
+        cursor.execute('INSERT INTO User (name, email, firebaseUID) VALUES (%s, %s, %s)', (name, email, uid))
+        mysql.connection.commit()
         user_id = cursor.lastrowid
+
+        # Insert the hub associated with the user
         cursor.execute('INSERT INTO Hub (modelNumber, userID, batteryLevel) VALUES (%s, %s, %s)', (model_number, user_id, 100))
         mysql.connection.commit()
         cursor.close()
 
-        return jsonify({"message": "User registered successfully", "firebaseUID": firebase_user_id, "userID": user_id}), 201
+        # Insert default user settings
+        cursor = mysql.connection.cursor()
+        cursor.execute('INSERT INTO UserSetting (userID, notificationFrequency, vibration, sound) VALUES (%s, %s, %s, %s)', (user_id, "only when critical", True, True))
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({"message": "User registered successfully", "userID": user_id}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -74,3 +80,9 @@ def login_user():
         return jsonify({'error': 'User does not exist'}), 400
 
     return jsonify({"message": "User logged in successfully", "firebaseUID": firebase_user_id}), 200
+
+#there is no need for this route because the firebase on the client side handles the logout
+@app.route('/api/logout', methods=['POST'])
+def logout_user():
+    # Instruct the client to clear the Firebase token
+    return jsonify({"message": "Logout successful. Please clear the client-side token."}), 200
