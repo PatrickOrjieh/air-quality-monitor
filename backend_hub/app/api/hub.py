@@ -5,6 +5,8 @@ from pubnub.pubnub import PubNub
 from dotenv import load_dotenv
 import os
 
+#Github copilot was used while writing this code
+
 # Load environment variables form .env file
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))

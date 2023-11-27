@@ -24,6 +24,12 @@ interface ApiService {
 
     @POST("login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
+    @GET("/api/settings")
+    fun getUserSettings(): Call<SettingsRequest>
+
+    @POST("updateUserSettings")
+    fun updateUserSettings(@Body settings: SettingsRequest): Call<SettingsResponse>
+
 
     @GET("/api/settings")
     fun getUserSettings(): Call<SettingsRequest>

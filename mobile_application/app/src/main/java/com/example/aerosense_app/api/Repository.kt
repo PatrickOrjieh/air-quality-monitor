@@ -13,7 +13,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+<<<<<<< Updated upstream
 //Github copilot used while writing this code
+=======
+//Github copilot was used when writing this code
+>>>>>>> Stashed changes
 
 class Repository(private val apiService: ApiService) {
 
@@ -25,12 +29,19 @@ class Repository(private val apiService: ApiService) {
         return apiService.getUserSettings()
     }
 
+<<<<<<< Updated upstream
     fun updateUserSettings(requestBody: Map<String, Object>): Call<SettingsResponse> {
         return apiService.updateUserSettings(requestBody)
     }
 
 
 
+=======
+    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
+        return apiService.updateUserSettings(requestBody)
+    }
+
+>>>>>>> Stashed changes
     fun fetchAirQualityData(token: String, onSuccess: (HomeData?) -> Unit, onError: (String) -> Unit) {
         val call = getAirQualityData(token)
         call.enqueue(object : Callback<HomeData> {

@@ -34,6 +34,8 @@ import com.example.aerosense_app.Screen
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 
+//Github copilot used when writing some of this code
+
 @Composable
 fun dataScreen(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var percent by remember { mutableIntStateOf(54) }
