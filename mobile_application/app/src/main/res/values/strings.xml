@@ -3,4 +3,5 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="data_screen">Data Screen</string>
+    <string name="msg_token_fmt">FCM Token: %s</string>
 </resources>
