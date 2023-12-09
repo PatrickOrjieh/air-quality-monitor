@@ -14,6 +14,7 @@ import com.codingwithmitch.composegooglemaps.compose.Location
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.network.RetrofitClient
 import com.example.aerosense_app.ui.AsthmaProfile
+import com.example.aerosense_app.ui.History
 import com.example.aerosense_app.ui.Register
 import com.example.aerosense_app.ui.ResetPassword
 import com.example.aerosense_app.ui.Settings
@@ -27,6 +28,7 @@ enum class Screen {
     Settings,
     Location,
     AsthmaProfile,
+    History
 }
 
         @Composable
@@ -53,6 +55,7 @@ enum class Screen {
             ) }
                     composable("AsthmaProfile"){ AsthmaProfile(navController) }
                     composable("ResetPassword") { ResetPassword(navController) }
+                    composable("History") { History(navController) }
                 }
             }
 

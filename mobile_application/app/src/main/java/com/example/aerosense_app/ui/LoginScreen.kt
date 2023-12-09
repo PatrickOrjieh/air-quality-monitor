@@ -1,6 +1,7 @@
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -115,6 +116,7 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
 
                 TextField(
                     value = email.trim(),
+
                     onValueChange = {
                         email = it
                         // Perform email validation
@@ -129,7 +131,8 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f), // Take remaining space in the Row
+                        .weight(1f) // Take remaining space in the Row
+                        .background(Color.White),
                     label = { Text("Email") }
                 )
             }
