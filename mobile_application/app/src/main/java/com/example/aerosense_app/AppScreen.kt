@@ -1,6 +1,7 @@
 package com.example.aerosense_app
 
 import Login
+import SplashScreen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import com.example.aerosense_app.ui.Settings
 import com.example.aerosense_app.ui.dataScreen
 
 enum class Screen {
+                  SplashScreen,
     Register,
     Login,
     ResetPassword,
@@ -42,7 +44,8 @@ enum class Screen {
             ) {
                 // A surface container using the 'background' color from the theme
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = Screen.Login.name) {
+                NavHost(navController = navController, startDestination = Screen.SplashScreen.name) {
+                    composable("SplashScreen") { SplashScreen(navController) }
                     composable("Login") { Login(navController, repository, firebaseModel) }
                     composable("Register") { Register(navController, repository, firebaseModel) }
                     composable("dataScreen") { dataScreen(navController, repository, firebaseModel) }
