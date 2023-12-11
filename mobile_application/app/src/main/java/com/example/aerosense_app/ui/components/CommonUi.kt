@@ -3,6 +3,7 @@ package com.example.aerosense_app.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -94,6 +95,7 @@ fun NavBar(navController: NavHostController){
             modifier = Modifier
                 .requiredWidth(width = 100.dp)
                 .requiredHeight(height = 93.dp)
+                .fillMaxSize()
         ) {
             //Blue background
             Box(
