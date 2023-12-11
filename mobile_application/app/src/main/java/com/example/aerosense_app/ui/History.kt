@@ -63,7 +63,7 @@ fun History(navController: NavHostController){
             fontWeight = FontWeight.Medium),
         modifier = Modifier.padding(top = 140.dp)
     )
-    
+
     DrawGraph()
 
     Box(
@@ -158,6 +158,8 @@ fun History(navController: NavHostController){
 //Parts of graph code adapted from: https://stackoverflow.com/questions/58589507/draw-simple-xy-graph-plot-with-kotlin-without-3rd-party-library
 @Composable
 fun DrawGraph() {
+    var yaxisDifference by remember { mutableIntStateOf(48) }
+
     // Sample data for Monday to Sunday
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -205,6 +207,20 @@ fun DrawGraph() {
             end = Offset(0f, canvasHeight),
             strokeWidth = 2f
         )
+
+        for (i in 0..5) {
+            // Calculate y-axis position based on index
+            val yCoord = canvasHeight - i * 20f * scaleY
+
+            // Draw axis line
+            drawLine(
+                color = Color.Gray,
+                start = Offset(0f, yCoord),
+                end = Offset(canvasWidth, yCoord),
+                strokeWidth = 1f
+            )
+        }
+
 
         // Draw axis labels and align with data points
         daysOfWeek.forEachIndexed { index, day ->
