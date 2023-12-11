@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -141,6 +142,25 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
             modifier = Modifier
                 .align(alignment = Alignment.Center)
         )
+
+        val imagePainter1 = rememberAsyncImagePainter(
+            model = R.drawable.infobutton,
+            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+        )
+
+        IconButton(onClick = { navController.navigate(Screen.EducationPage.name)},
+            modifier = Modifier
+                .align(alignment = Alignment.TopStart)
+                .offset(x = 240.dp, y = 60.dp)){
+            Image(
+                painter = imagePainter1,
+                contentDescription = "download 2",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.requiredWidth(width = 40.dp)
+            )
+        }
+
     }
 
     Box() {
@@ -198,6 +218,8 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
 //                .requiredWidth(width = 100.dp)
 //                .requiredHeight(height = 100.dp)
 //        )
+
+
         Text(
             text = "PM2.5 -",
             color = Color(0xff1e1e1e),
