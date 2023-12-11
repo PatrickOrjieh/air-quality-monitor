@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
@@ -62,12 +63,24 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.padding(start = 16.dp) // Add padding to the outer column
         ) {
+            val imagePainter = rememberAsyncImagePainter(
+                model = R.drawable.logo_no_background,
+                placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+            )
+
             Image(
-                painter = painterResource(id = R.drawable.logo_no_background),
+                painter = imagePainter,
                 contentDescription = "AeroSense Logo",
                 modifier = Modifier
                     .size(300.dp)
             )
+//            Image(
+//                painter = painterResource(id = R.drawable.logo_no_background),
+//                contentDescription = "AeroSense Logo",
+//                modifier = Modifier
+//                    .size(300.dp)
+//            )
 
             // Login-related elements
             Text(
@@ -106,11 +119,23 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
                     .padding(16.dp)
                     .offset(y = -50.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.email),
+                val imagePainter2 = rememberAsyncImagePainter(
+                    model = R.drawable.email,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
+                Image (
+                    painter = imagePainter2,
                     contentDescription = "Email Icon",
                     modifier = Modifier.size(35.dp)
                 )
+
+//                Image(
+//                    painter = painterResource(id = R.drawable.email),
+//                    contentDescription = "Email Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -145,11 +170,22 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
                     .padding(16.dp)
                     .offset(y = -50.dp)
             ) {
+                val imagePainter3 = rememberAsyncImagePainter(
+                    model = R.drawable.password,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.password),
+                    painter = imagePainter3,
                     contentDescription = "Password Icon",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.password),
+//                    contentDescription = "Password Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 

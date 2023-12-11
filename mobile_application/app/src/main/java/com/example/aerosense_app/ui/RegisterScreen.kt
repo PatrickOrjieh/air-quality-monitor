@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.RegisterRequest
@@ -90,11 +91,22 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.user,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.user),
+                    painter = imagePainter,
                     contentDescription = "User Icon",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.user),
+//                    contentDescription = "User Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -125,11 +137,22 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.email,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.email),
+                    painter = imagePainter,
                     contentDescription = "Email Icon",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.email),
+//                    contentDescription = "Email Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -161,11 +184,22 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.password,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.password),
+                    painter = imagePainter,
                     contentDescription = "Password Icon",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.password),
+//                    contentDescription = "Password Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -198,11 +232,22 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.password,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.password),
+                    painter = imagePainter,
                     contentDescription = "Password Icon",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.password),
+//                    contentDescription = "Password Icon",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -235,11 +280,22 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.modelnum,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
                 Image(
-                    painter = painterResource(id = R.drawable.modelnum),
+                    painter = imagePainter,
                     contentDescription = "Model Number",
                     modifier = Modifier.size(35.dp)
                 )
+//                Image(
+//                    painter = painterResource(id = R.drawable.modelnum),
+//                    contentDescription = "Model Number",
+//                    modifier = Modifier.size(35.dp)
+//                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
