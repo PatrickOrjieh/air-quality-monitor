@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,12 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -60,15 +60,13 @@ import com.example.aerosense_app.Screen
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import kotlin.math.sin
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.clipPath
 
 //Github copilot used when writing some of this code
 
 @Composable
 fun dataScreen(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel) {
     var percent by remember { mutableIntStateOf(54) }
-    var     percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
+    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var time by remember { mutableStateOf("") }
     var pmTwo by remember { mutableFloatStateOf(0.0F) }
     var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
@@ -606,7 +604,7 @@ fun WavyCircleProgress(percentage: Float, size: Dp, color: Color) {
 
 fun getAirQualityColor(percentage: Float): Color {
     return when {
-        percentage >= 0.8 -> Color(0x6600FF00) // Very good - Green with transparency
+        percentage >= 0.8 -> Color(0xffff15e002) // Very good - Green with transparency
         percentage >= 0.6 -> Color(0x66FFFF00) // Moderate - Yellow with transparency
         percentage >= 0.4 -> Color(0x66FFA500) // Poor - Orange with transparency
         else -> Color(0x66FF0000)              // Very Poor - Red with transparency
