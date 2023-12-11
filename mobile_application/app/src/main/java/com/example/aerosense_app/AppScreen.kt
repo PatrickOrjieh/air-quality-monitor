@@ -2,6 +2,7 @@ package com.example.aerosense_app
 
 import Login
 import SplashScreen
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -16,11 +17,13 @@ import com.codingwithmitch.composegooglemaps.compose.Location
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.network.RetrofitClient
 import com.example.aerosense_app.ui.AsthmaProfile
+import com.example.aerosense_app.ui.EducationPage
 import com.example.aerosense_app.ui.History
 import com.example.aerosense_app.ui.Register
 import com.example.aerosense_app.ui.ResetPassword
 import com.example.aerosense_app.ui.Settings
 import com.example.aerosense_app.ui.dataScreen
+import com.example.aerosense_app.ui.EducationPage
 
 enum class Screen {
                   SplashScreen,
@@ -31,9 +34,11 @@ enum class Screen {
     Settings,
     Location,
     AsthmaProfile,
-    History
+    History,
+    EducationPage
 }
 
+        @SuppressLint("ComposableDestinationInComposeScope")
         @Composable
         fun AerosenseApp(viewModel: MapViewModel){
             val appContext = LocalContext.current.applicationContext as Aerosense
@@ -56,6 +61,7 @@ enum class Screen {
                     composable("Register") { Register(navController, repository, firebaseModel) }
                     composable("dataScreen") { dataScreen(navController, repository, firebaseModel) }
                     composable("Settings") { Settings(navController, repository) }
+                    composable("EducationPage") { EducationPage(navController) }
                     composable("Location") { Location(
                 state = viewModel.state.value,
                 setupClusterManager = viewModel::setupClusterManager,
@@ -65,10 +71,10 @@ enum class Screen {
                     composable("AsthmaProfile"){ AsthmaProfile(navController) }
                     composable("ResetPassword") { ResetPassword(navController) }
                     composable("History") { History(navController) }
-                }
             }
 
         }
+    }
 
 
 
