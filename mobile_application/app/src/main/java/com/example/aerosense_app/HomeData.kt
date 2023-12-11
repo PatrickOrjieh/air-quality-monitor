@@ -1,5 +1,11 @@
 package com.example.aerosense_app
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class HomeData(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val pm25: Float,
     val pm10: Float,
     val voc_level: Float,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,6 +16,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -27,10 +31,41 @@ fun History(navController: NavHostController){
 
     NavBar(navController)
 
+    Text(
+        text = "History",
+        textAlign = TextAlign.Center,
+        color = Color(0xff1e1e1e),
+        style = TextStyle(
+            fontSize = 35.sp,
+            fontWeight = FontWeight.Medium),
+        modifier = Modifier.padding(top = 80.dp)
+    )
+
+    Text(
+        text = "Average Weekly Air Quality",
+        textAlign = TextAlign.Center,
+        color = Color(0xff1e1e1e),
+        style = TextStyle(
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium),
+        modifier = Modifier.padding(top = 140.dp)
+    )
+    
     DrawGraph()
+
+//    Text(
+//        text = "Average Air Cleanliness:",
+//        textAlign = TextAlign.Center,
+//        color = Color(0xff1e1e1e),
+//        style = TextStyle(
+//            fontSize = 20.sp,
+//            fontWeight = FontWeight.Bold),
+//        modifier = Modifier.padding(top = 140.dp)
+//    )
 
 }
 
+//Parts of graph code adapted from: https://stackoverflow.com/questions/58589507/draw-simple-xy-graph-plot-with-kotlin-without-3rd-party-library
 @Composable
 fun DrawGraph() {
     // Sample data for Monday to Sunday
@@ -48,7 +83,7 @@ fun DrawGraph() {
             .padding(start= 30.dp)
             .requiredHeight(200.dp)
             .requiredWidth(250.dp)
-            .offset(y = (-100).dp)
+            .offset(y = (-50).dp)
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
@@ -126,3 +161,5 @@ fun DrawGraph() {
         drawPath(path, color = Color.Blue, style = Stroke(4f))
     }
 }
+
+

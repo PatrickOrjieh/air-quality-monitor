@@ -113,4 +113,11 @@ dependencies {
 
     implementation ("com.google.firebase:firebase-auth:22.3.0")
     implementation ("com.google.firebase:firebase-auth-ktx")
+
+    //for the lottie animation from https://medium.com/@v_ignatyev/lottie-animations-in-jetpack-compose-for-android-5fdb2534220f
+    implementation("com.airbnb.android:lottie-compose:4.0.0")
+
+    //room components
+    implementation("androidx.room:room-runtime:2.4.2")
+    kapt("androidx.room:room-compiler:2.4.2")
 }
