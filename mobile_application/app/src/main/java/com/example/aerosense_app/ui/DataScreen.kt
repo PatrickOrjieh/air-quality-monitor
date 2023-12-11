@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -493,8 +494,19 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
                 }
             }
             item {
-                Button(onClick = { expanded = !expanded }) {
-                    Text(if (expanded) "View Less" else "View More")
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp)
+                    .requiredWidth(width = 130.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text(text = if (expanded) "View Less" else "View More")
+                    }
                 }
             }
             if (expanded) {

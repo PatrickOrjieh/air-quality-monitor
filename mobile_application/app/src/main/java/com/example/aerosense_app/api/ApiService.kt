@@ -30,5 +30,4 @@ interface ApiService {
     @POST("updateUserSettings")
     fun updateUserSettings(@Body settings: SettingsRequest): Call<SettingsResponse>
 
-
 }
