@@ -1,6 +1,7 @@
 package com.example.aerosense_app.ui
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -11,10 +12,21 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,6 +76,14 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
     var pmTenColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var voc by remember { mutableFloatStateOf(0.0F) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
+    var expanded by remember { mutableStateOf(false) }
+    var pmOne by remember { mutableFloatStateOf(0.0F) }
+    var temperature by remember { mutableFloatStateOf(0.0F) }
+    var humidity by remember { mutableFloatStateOf(0.0F) }
+    var gas_resistance by remember { mutableFloatStateOf(0.0F) }
+    var pollenCount by remember { mutableIntStateOf(0) }
+
+
 
 //    percent = 58
 //    time = "12:56"
@@ -92,6 +112,21 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
                 if (homeData != null) {
                     voc = homeData.voc_level
                 }
+                if (homeData != null) {
+                    pmOne = homeData.pm1
+                }
+                if (homeData != null) {
+                    temperature = homeData.temperature
+                }
+                if (homeData != null) {
+                    humidity = homeData.humidity
+                }
+                if (homeData != null) {
+                    gas_resistance = homeData.gas_resistance
+                }
+                if (homeData != null) {
+                    pollenCount = homeData.pollenCount
+                }
 
                 percent = calculateAirQualityPercentage(voc.toDouble()).toInt()
 
@@ -107,94 +142,99 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
 
     NavBar(navController)
 
-    //Box for the circle
-    Box(
-        modifier = Modifier
-            .requiredWidth(width = 320.dp)
-            .requiredHeight(height = 320.dp)
-            .offset(y = -180.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // Animated wavy circle based on air quality percentage
-        val circleSize = 220.dp // Adjust the size as necessary
-        val airQualityPercentage = calculateAirQualityPercentage(voc.toDouble()).toFloat() / 100f
+    LazyColumn {
+        item {
+            //Box for the circle
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .requiredHeight(height = 320.dp)
+                    .padding(top = 40.dp)
+                    .offset(y = 20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Animated wavy circle based on air quality percentage
+                val circleSize = 220.dp
+                val airQualityPercentage = calculateAirQualityPercentage(voc.toDouble()).toFloat() / 100f
 
-        WavyCircleProgress(
-            percentage = airQualityPercentage,
-            size = circleSize, // Use the reduced size here
-            color = getAirQualityColor(airQualityPercentage)
-        )
-
-        // Text displaying the percentage of clean air
-        Text(
-            text = "${(airQualityPercentage * 100).toInt()}% Clean",
-            color = percentageColor,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        val imagePainter1 = rememberAsyncImagePainter(
-            model = R.drawable.infobutton,
-            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
-            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
-        )
-
-        IconButton(onClick = { navController.navigate(Screen.EducationPage.name)},
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(x = 260.dp, y = 60.dp)){
-            Image(
-                painter = imagePainter1,
-                contentDescription = "download 2",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.requiredWidth(width = 40.dp)
-            )
-        }
-
-    }
-
-    Box() {
-        //Centered text underneath the circle box
-        Text(
-            text = "Updated: $time",
-            color = Color(0xff1e1e1e),
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.Center)
-                .offset(y = -50.dp)
-        )
-    }
-
-    //Box for the particle stats
-    Box(
-        modifier = Modifier
-            .requiredWidth(width = 534.dp)
-            .requiredHeight(height = 123.dp)
-            .offset(y = 40.dp)
-    ) {
-        val imagePainter = rememberAsyncImagePainter(
-            model = R.drawable.particles,
-            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
-            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
-        )
-
-        Image(
-            painter = imagePainter,
-            contentDescription = "download 1",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 100.dp,
-                    y = 4.5.dp
+                WavyCircleProgress(
+                    percentage = airQualityPercentage,
+                    size = circleSize, // Use the reduced size here
+                    color = getAirQualityColor(airQualityPercentage)
                 )
-                .requiredWidth(width = 100.dp)
-                .requiredHeight(height = 100.dp)
-        )
+
+                // Text displaying the percentage of clean air
+                Text(
+                    text = "${(airQualityPercentage * 100).toInt()}% Clean",
+                    color = percentageColor,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                val imagePainter1 = rememberAsyncImagePainter(
+                    model = R.drawable.infobutton,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
+                IconButton(onClick = { navController.navigate(Screen.EducationPage.name)},
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(x = 300.dp, y = 40.dp)){
+                    Image(
+                        painter = imagePainter1,
+                        contentDescription = "download 2",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.requiredWidth(width = 40.dp)
+                    )
+                }
+
+            }
+
+            Box(modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center)
+            {
+                //Centered text underneath the circle box
+                Text(
+                    text = "Updated: $time",
+                    color = Color(0xff1e1e1e),
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.Center)
+                        .offset(y = 10.dp)
+                )
+            }
+
+            //Box for the particle stats
+            Box(
+                modifier = Modifier
+                    .requiredWidth(width = 534.dp)
+                    .requiredHeight(height = 123.dp)
+                    .offset(y = 40.dp)
+            ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.particles,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+                )
+
+                Image(
+                    painter = imagePainter,
+                    contentDescription = "download 1",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 100.dp,
+                            y = 4.5.dp
+                        )
+                        .requiredWidth(width = 100.dp)
+                        .requiredHeight(height = 100.dp)
+                )
 //        Image(
 //            painter = painterResource(id = R.drawable.particles),
 //            contentDescription = "download 1",
@@ -210,126 +250,126 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
 //        )
 
 
-        Text(
-            text = "PM2.5 -",
-            color = Color(0xff1e1e1e),
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 227.dp,
-                    y = 15.dp
+                Text(
+                    text = "PM2.5 -",
+                    color = Color(0xff1e1e1e),
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 227.dp,
+                            y = 15.dp
+                        )
                 )
-        )
 
-        //If statements to change the color of the air quality measures
-        if(pmTwo >=0 && pmTwo <= 10){
-            //Make the color green
-            pmTwoColor = Color(0xffff50f413 )
-        }
-        else if(pmTwo > 10 && pmTwo <= 20) {
-            pmTwoColor = Color(0xffffa629)
-        }
-        else if(pmTwo > 20 && pmTwo <= 25){
-            pmTwoColor = Color(0xfff24822)
-        }
-        else{
-            pmTwoColor = Color(0xffaf21d2)
-        }
+                //If statements to change the color of the air quality measures
+                if(pmTwo >=0 && pmTwo <= 10){
+                    //Make the color green
+                    pmTwoColor = Color(0xffff50f413 )
+                }
+                else if(pmTwo > 10 && pmTwo <= 20) {
+                    pmTwoColor = Color(0xffffa629)
+                }
+                else if(pmTwo > 20 && pmTwo <= 25){
+                    pmTwoColor = Color(0xfff24822)
+                }
+                else{
+                    pmTwoColor = Color(0xffaf21d2)
+                }
 
-        Text(
-            text = pmTwo.toString() + "µg/m^3",
-            color = pmTwoColor,
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 320.dp,
-                    y = 15.dp
+                Text(
+                    text = pmTwo.toString() + "µg/m^3",
+                    color = pmTwoColor,
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 320.dp,
+                            y = 15.dp
+                        )
                 )
-        )
-        Text(
-            text = "PM10 -",
-            color = Color(0xff1e1e1e),
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 227.dp,
-                    y = 63.dp
+                Text(
+                    text = "PM10 -",
+                    color = Color(0xff1e1e1e),
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 227.dp,
+                            y = 63.dp
+                        )
                 )
-        )
 
-        //If statements to change the color of the air quality measures
-        if(pmTen >=0 && pmTen <= 20){
-            //Make the color green
-            pmTenColor = Color(0xffff50f413 )
-        }
-        else if(pmTen > 20 && pmTen < 40) {
-            pmTenColor = Color(0xffffa629)
-        }
-        else if(pmTen > 40 && pmTen < 50){
-            pmTenColor = Color(0xfff24822)
-        }
-        else{
-            pmTenColor = Color(0xffaf21d2)
-        }
+                //If statements to change the color of the air quality measures
+                if(pmTen >=0 && pmTen <= 20){
+                    //Make the color green
+                    pmTenColor = Color(0xffff50f413 )
+                }
+                else if(pmTen > 20 && pmTen < 40) {
+                    pmTenColor = Color(0xffffa629)
+                }
+                else if(pmTen > 40 && pmTen < 50){
+                    pmTenColor = Color(0xfff24822)
+                }
+                else{
+                    pmTenColor = Color(0xffaf21d2)
+                }
 
-        Text(
-            text = pmTen.toString() + "µg/m^3",
-            color = pmTenColor,
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 320.dp,
-                    y = 63.dp
+                Text(
+                    text = pmTen.toString() + "µg/m^3",
+                    color = pmTenColor,
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 320.dp,
+                            y = 63.dp
+                        )
                 )
-        )
-    }
+            }
 
-    //Box for the gas stats
-    Box(
-        modifier = Modifier
-            .requiredWidth(width = 541.dp)
-            .requiredHeight(height = 137.dp)
-            .offset(y = 180.dp)
-    ) {
-        val imagePainter = rememberAsyncImagePainter(
-            model = R.drawable.gascloud,
-            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
-            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
-        )
-
-        Image(
-            painter = imagePainter,
-            contentDescription = "download 2",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .requiredWidth(width = 100.dp)
-                .requiredHeight(height = 100.dp)
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 105.dp,
-                    y = 4.5.dp
+            //Box for the gas stats
+            Box(
+                modifier = Modifier
+                    .requiredWidth(width = 541.dp)
+                    .requiredHeight(height = 137.dp)
+                    .offset(y = 20.dp)
+            ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.gascloud,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
                 )
-        )
+
+                Image(
+                    painter = imagePainter,
+                    contentDescription = "download 2",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .requiredWidth(width = 100.dp)
+                        .requiredHeight(height = 100.dp)
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 105.dp,
+                            y = 4.5.dp
+                        )
+                )
 //        Image(
 //            painter = painterResource(id = R.drawable.gascloud),
 //            contentDescription = "download 2",
@@ -344,80 +384,80 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
 //                )
 //        )
 
-        Text(
-            text = "VOC Level -",
-            color = Color(0xff1e1e1e),
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 227.dp,
-                    y = 43.dp
+                Text(
+                    text = "VOC Level -",
+                    color = Color(0xff1e1e1e),
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 227.dp,
+                            y = 43.dp
+                        )
                 )
-        )
 
-        //If statements to change the color of the air quality measures
-        if(voc > 0.0 && voc <= 0.5){
-            //Make the color green
-            vocColor = Color(0xffff50f413 )
-        }
-        else if(voc > 0.5 && voc <= 1.0) {
-            vocColor = Color(0xffffa629)
-        }
-        else if(voc > 1.0 && voc <= 2.0){
-            vocColor = Color(0xfff24822)
-        }
-        else{
-            vocColor = Color(0xffaf21d2)
-        }
+                //If statements to change the color of the air quality measures
+                if(voc > 0.0 && voc <= 0.5){
+                    //Make the color green
+                    vocColor = Color(0xffff50f413 )
+                }
+                else if(voc > 0.5 && voc <= 1.0) {
+                    vocColor = Color(0xffffa629)
+                }
+                else if(voc > 1.0 && voc <= 2.0){
+                    vocColor = Color(0xfff24822)
+                }
+                else{
+                    vocColor = Color(0xffaf21d2)
+                }
 
-        Text(
-            text = "$voc ppb",
-            color = vocColor,
-            lineHeight = 3.75.em,
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 345.dp,
-                    y = 43.dp
+                Text(
+                    text = "$voc ppb",
+                    color = vocColor,
+                    lineHeight = 3.75.em,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 345.dp,
+                            y = 43.dp
+                        )
                 )
-        )
-    }
+            }
 
-    //Box for location
-    Box(
-        modifier = Modifier
-            .requiredWidth(width = 437.dp)
-            .requiredHeight(height = 129.dp)
-            .offset(y = 300.dp)
-    ) {
-        val imagePainter = rememberAsyncImagePainter(
-            model = R.drawable.location,
-            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
-            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
-        )
-
-        Image(
-            painter = imagePainter,
-            contentDescription = "download 3",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .requiredWidth(width = 100.dp)
-                .requiredHeight(height = 100.dp)
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 50.dp,
-                    y = 4.5.dp
+            //Box for location
+            Box(
+                modifier = Modifier
+                    .requiredWidth(width = 437.dp)
+                    .requiredHeight(height = 129.dp)
+                    .offset(y = 20.dp)
+            ) {
+                val imagePainter = rememberAsyncImagePainter(
+                    model = R.drawable.location,
+                    placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+                    error = painterResource(R.drawable.ic_broken_image) // Image shown on error
                 )
-        )
+
+                Image(
+                    painter = imagePainter,
+                    contentDescription = "download 3",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .requiredWidth(width = 100.dp)
+                        .requiredHeight(height = 100.dp)
+                        .align(alignment = Alignment.TopStart)
+                        .offset(
+                            x = 50.dp,
+                            y = 4.5.dp
+                        )
+                )
 //        Image(
 //            painter = painterResource(id = R.drawable.location),
 //            contentDescription = "download 3",
@@ -432,26 +472,75 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
 //                )
 //        )
 
-        Box(modifier = Modifier.offset(
-            x = 169.dp,
-            y = 33.5.dp
-        )
-            .clickable {
-            navController.navigate(Screen.Location.name)
-        }) {
+                Box(modifier = Modifier.offset(
+                    x = 169.dp,
+                    y = 33.5.dp
+                )
+                    .clickable {
+                        navController.navigate(Screen.Location.name)
+                    }) {
 
-            Text(
-                text = "View Location",
-                color = Color(0xff237ec1),
-                lineHeight = 3.75.em,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier
-                    .align(alignment = Alignment.TopStart)
+                    Text(
+                        text = "View Location",
+                        color = Color(0xff237ec1),
+                        lineHeight = 3.75.em,
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier
+                            .align(alignment = Alignment.TopStart)
 
-            )
+                    )
+                }
+            }
+        }
+        item {
+            Button(onClick = { expanded = !expanded }) {
+                Text(if (expanded) "View Less" else "View More")
+            }
+        }
+        if (expanded) {
+            item {
+                MeasurementCard(
+                    measurementName = "PM1",
+                    measurementValue = pmOne,
+                    color = Color(0xff1e1e1e),
+                    imageRes = R.drawable.particles
+                )
+            }
+            item {
+                MeasurementCard(
+                    measurementName = "Temperature",
+                    measurementValue = temperature,
+                    color = Color(0xff1e1e1e),
+                    imageRes = R.drawable.temperature
+                )
+            }
+            item {
+                MeasurementCard(
+                    measurementName = "Humidity",
+                    measurementValue = humidity,
+                    color = Color(0xff1e1e1e),
+                    imageRes = R.drawable.humidity
+                )
+            }
+            item {
+                MeasurementCard(
+                    measurementName = "Gas Resistance",
+                    measurementValue = gas_resistance,
+                    color = Color(0xff1e1e1e),
+                    imageRes = R.drawable.gascloud
+                )
+            }
+            item {
+                MeasurementCard(
+                    measurementName = "Pollen Count",
+                    measurementValue = pollenCount.toFloat(),
+                    color = Color(0xff1e1e1e),
+                    imageRes = R.drawable.pollen
+                )
+            }
         }
     }
 
@@ -483,13 +572,12 @@ fun WavyCircleProgress(percentage: Float, size: Dp, color: Color) {
             addOval(oval = Rect(Offset.Zero, size = Size(size.toPx(), size.toPx())))
         }
         clipPath(circlePath) {
-            // Outer circle with more transparency
             drawCircle(
                 color = Color.Transparent,
                 radius = size.toPx() / 2
             )
 
-            val waveHeight = 20f // Height of the wave
+            val waveHeight = 20f
             val waveTop = size.toPx() * (1 - percentage) + waveHeight
 
             // Draw wavy fill
@@ -508,10 +596,9 @@ fun WavyCircleProgress(percentage: Float, size: Dp, color: Color) {
             drawPath(path = path, color = color)
         }
 
-        // Draw the circle border
         drawCircle(
             color = color,
-            radius = size.toPx() / 2 - 1.dp.toPx(), // Subtract stroke width from radius
+            radius = size.toPx() / 2 - 1.dp.toPx(),
             style = Stroke(width = 2.dp.toPx())
         )
     }
@@ -525,5 +612,46 @@ fun getAirQualityColor(percentage: Float): Color {
         else -> Color(0x66FF0000)              // Very Poor - Red with transparency
     }
 }
+
+@Composable
+fun MeasurementCard(
+    measurementName: String,
+    measurementValue: Float,
+    color: Color,
+    imageRes: Int
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .animateContentSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = "$measurementName icon",
+                modifier = Modifier.size(40.dp) // Adjust the size as needed
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text("$measurementName -", fontSize = 20.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    "$measurementValue",
+                    color = color,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
 
 

@@ -34,11 +34,14 @@ def get_air_quality_data():
 
         if result:
             response_data = {
+                'pm1': result.PM1,
                 'pm25': result.PM2_5,
                 'pm10': result.PM10,
                 'voc_level': result.VOC,
                 'temperature': result.temperature,
                 'humidity': result.humidity,
+                'gas_resistance': result.gas_resistance,
+                'pollenCount': result.pollenCount,
                 'last_updated': result.timestamp.strftime('%I:%M%p')
             }
             return jsonify(response_data), 200

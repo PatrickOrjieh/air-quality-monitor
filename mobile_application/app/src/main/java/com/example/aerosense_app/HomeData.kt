@@ -6,11 +6,14 @@ import androidx.room.PrimaryKey
 @Entity
 data class HomeData(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val pm1: Float,
     val pm25: Float,
     val pm10: Float,
     val voc_level: Float,
     val temperature: Float,
     val humidity: Float,
+    val gas_resistance: Float,
+    val pollenCount: Int,
     val last_updated: String
 )
 

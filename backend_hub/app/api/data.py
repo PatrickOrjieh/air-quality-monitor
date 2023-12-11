@@ -46,11 +46,14 @@ def get_air_quality_data():
         if result:
             data = dict(zip(row_headers, result))
             response_data = {
+                'pm1': data['PM1'],
                 'pm25': data['PM2_5'],
                 'pm10': data['PM10'],
                 'voc_level': data['VOC'],
                 'temperature': data['temperature'],
                 'humidity': data['humidity'],
+                'gas_resistance': data['gas_resistance'],
+                'pollenCount': data['pollenCount'],
                 'last_updated': data['timestamp'].strftime('%I:%M%p')
             }
             return jsonify(response_data), 200
