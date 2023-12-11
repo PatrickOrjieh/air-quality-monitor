@@ -1,6 +1,7 @@
 package com.example.aerosense_app.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,10 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -28,6 +33,14 @@ import com.example.aerosense_app.ui.components.NavBar
 
 @Composable
 fun History(navController: NavHostController){
+    var airPercent by remember { mutableIntStateOf(0) }
+    var highPM by remember { mutableIntStateOf(0) }
+    var highVOC by remember { mutableIntStateOf(0) }
+
+    //hardcoded values for now
+    airPercent = 80
+    highPM = 100
+    highVOC = 50
 
     NavBar(navController)
 
@@ -53,15 +66,92 @@ fun History(navController: NavHostController){
     
     DrawGraph()
 
-//    Text(
-//        text = "Average Air Cleanliness:",
-//        textAlign = TextAlign.Center,
-//        color = Color(0xff1e1e1e),
-//        style = TextStyle(
-//            fontSize = 20.sp,
-//            fontWeight = FontWeight.Bold),
-//        modifier = Modifier.padding(top = 140.dp)
-//    )
+    Box(
+        modifier = Modifier.padding(top = 440.dp)
+            .padding(start = 20.dp)
+    ) {
+        Text(
+            text = "Average Air Cleanliness:",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            ),
+        )
+
+        Text(
+            text = "-> $airPercent%",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+            ),
+            modifier = Modifier.padding(top = 30.dp)
+        )
+    }
+
+    Box(
+        modifier = Modifier.padding(top = 510.dp)
+            .padding(start = 20.dp)
+    ) {
+        Text(
+            text = "Highest PM This Week:",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            ),
+        )
+
+        Text(
+            text = "-> $highPM µg/m^3",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+            ),
+            modifier = Modifier.padding(top = 30.dp)
+        )
+
+        Text(
+            text = "-> Date: 11/12/23",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+            ),
+            modifier = Modifier.padding(top = 60.dp)
+        )
+    }
+
+    Box(
+        modifier = Modifier.padding(top = 610.dp)
+            .padding(start = 20.dp)
+    ) {
+        Text(
+            text = "Highest VOC This Week:",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            ),
+        )
+
+        Text(
+            text = "-> $highVOC ppb",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+            ),
+            modifier = Modifier.padding(top = 30.dp)
+        )
+
+        Text(
+            text = "-> Date: 10/12/23",
+            color = Color(0xff1e1e1e),
+            style = TextStyle(
+                fontSize = 20.sp,
+            ),
+            modifier = Modifier.padding(top = 60.dp)
+        )
+    }
 
 }
 
@@ -83,7 +173,7 @@ fun DrawGraph() {
             .padding(start= 30.dp)
             .requiredHeight(200.dp)
             .requiredWidth(250.dp)
-            .offset(y = (-50).dp)
+            .offset(y = (-60).dp)
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
