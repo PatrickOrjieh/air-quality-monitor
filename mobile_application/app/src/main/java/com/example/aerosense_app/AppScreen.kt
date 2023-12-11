@@ -7,6 +7,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,7 +36,12 @@ enum class Screen {
 
         @Composable
         fun AerosenseApp(viewModel: MapViewModel){
-            val repository = remember {Repository(apiService = RetrofitClient.create())}
+            val appContext = LocalContext.current.applicationContext as Aerosense
+            val homeDataDao = appContext.db.homeDataDao()
+
+            val repository = remember {
+                Repository(apiService = RetrofitClient.create(), homeDataDao = homeDataDao)
+            }
             val firebaseModel: FirebaseViewModel = viewModel()
 
 
