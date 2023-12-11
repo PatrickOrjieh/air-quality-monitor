@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
@@ -165,8 +166,14 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
             .requiredHeight(height = 123.dp)
             .offset(y = 40.dp)
     ) {
+        val imagePainter = rememberAsyncImagePainter(
+            model = R.drawable.particles,
+            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+        )
+
         Image(
-            painter = painterResource(id = R.drawable.particles),
+            painter = imagePainter,
             contentDescription = "download 1",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -178,6 +185,19 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
                 .requiredWidth(width = 100.dp)
                 .requiredHeight(height = 100.dp)
         )
+//        Image(
+//            painter = painterResource(id = R.drawable.particles),
+//            contentDescription = "download 1",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .align(alignment = Alignment.TopStart)
+//                .offset(
+//                    x = 100.dp,
+//                    y = 4.5.dp
+//                )
+//                .requiredWidth(width = 100.dp)
+//                .requiredHeight(height = 100.dp)
+//        )
         Text(
             text = "PM2.5 -",
             color = Color(0xff1e1e1e),
@@ -279,8 +299,14 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
             .requiredHeight(height = 137.dp)
             .offset(y = 180.dp)
     ) {
+        val imagePainter = rememberAsyncImagePainter(
+            model = R.drawable.gascloud,
+            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+        )
+
         Image(
-            painter = painterResource(id = R.drawable.gascloud),
+            painter = imagePainter,
             contentDescription = "download 2",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -292,6 +318,19 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
                     y = 4.5.dp
                 )
         )
+//        Image(
+//            painter = painterResource(id = R.drawable.gascloud),
+//            contentDescription = "download 2",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .requiredWidth(width = 100.dp)
+//                .requiredHeight(height = 100.dp)
+//                .align(alignment = Alignment.TopStart)
+//                .offset(
+//                    x = 105.dp,
+//                    y = 4.5.dp
+//                )
+//        )
 
         Text(
             text = "VOC Level -",
@@ -348,8 +387,14 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
             .requiredHeight(height = 129.dp)
             .offset(y = 300.dp)
     ) {
+        val imagePainter = rememberAsyncImagePainter(
+            model = R.drawable.location,
+            placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+            error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+        )
+
         Image(
-            painter = painterResource(id = R.drawable.location),
+            painter = imagePainter,
             contentDescription = "download 3",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -361,6 +406,19 @@ fun dataScreen(navController: NavHostController, repository: Repository, firebas
                     y = 4.5.dp
                 )
         )
+//        Image(
+//            painter = painterResource(id = R.drawable.location),
+//            contentDescription = "download 3",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .requiredWidth(width = 100.dp)
+//                .requiredHeight(height = 100.dp)
+//                .align(alignment = Alignment.TopStart)
+//                .offset(
+//                    x = 50.dp,
+//                    y = 4.5.dp
+//                )
+//        )
 
         Box(modifier = Modifier.offset(
             x = 169.dp,

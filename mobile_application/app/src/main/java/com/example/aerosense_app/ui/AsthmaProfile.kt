@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.aerosense_app.R
 import com.example.aerosense_app.ui.components.NavBar
 import com.example.aerosense_app.ui.components.SelectionDropDown
@@ -37,13 +38,28 @@ fun AsthmaProfile(navController: NavHostController){
         modifier = Modifier.padding(top = 80.dp)
     )
 
+    val imagePainter = rememberAsyncImagePainter(
+        model = R.drawable.userprofile,
+        placeholder = painterResource(R.drawable.loading_image), // Image shown while loading
+        error = painterResource(R.drawable.ic_broken_image) // Image shown on error
+    )
+
     Image(
-        painter = painterResource(id = R.drawable.userprofile),
-        contentDescription = "image 1",
+        painter = imagePainter,
+        contentDescription = "Profile Image",
         contentScale = ContentScale.Crop,
         modifier = Modifier
             .offset(y = -110.dp)
-            .requiredSize(size = 200.dp))
+            .requiredSize(size = 200.dp)
+    )
+
+//    Image(
+//        painter = painterResource(id = R.drawable.userprofile),
+//        contentDescription = "image 1",
+//        contentScale = ContentScale.Crop,
+//        modifier = Modifier
+//            .offset(y = -110.dp)
+//            .requiredSize(size = 200.dp))
 
     Text(
         text = "Main Trigger",

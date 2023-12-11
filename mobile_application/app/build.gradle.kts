@@ -120,4 +120,7 @@ dependencies {
     //room components
     implementation("androidx.room:room-runtime:2.4.2")
     kapt("androidx.room:room-compiler:2.4.2")
+
+    //coil for image loading
+    implementation("io.coil-kt:coil-compose:2.1.0")
 }
