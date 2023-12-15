@@ -137,11 +137,11 @@ fun NavBar(navController: NavHostController){
 //Have to opt in for Experimental Material 3 API in order to use TextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionDropDown(selection: Array<String>) {
+fun SelectionDropDown(selection: Array<String>, selected: String) {
     //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(selection[0]) }
+    var selectedText by remember { mutableStateOf(selected) }
 
     Box(
         modifier = Modifier

@@ -75,7 +75,7 @@ fun AsthmaProfile(navController: NavHostController){
             .padding(top = 400.dp, start = 20.dp)
     )
     {
-        SelectionDropDown(selection = selectionTrigger)
+        SelectionDropDown(selection = selectionTrigger, "Fumes")
     }
 
     Text(
@@ -92,7 +92,7 @@ fun AsthmaProfile(navController: NavHostController){
             .padding(top = 550.dp, start = 20.dp)
     )
     {
-        SelectionDropDown(selection = selectionSeverity)
+        SelectionDropDown(selection = selectionSeverity, "Mild intermittent asthma")
     }
 
 }

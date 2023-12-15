@@ -270,7 +270,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
         //Device connection status
         Row(
             modifier = Modifier
-                .padding(top = 200.dp)
+                .padding(top = 220.dp)
                 .padding(start = 5.dp)
         ) {
 
@@ -288,14 +288,14 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
             ) {
 
                 Text(
-                    text = "Vibration",
+                    text = "Sound",
                     textAlign = TextAlign.Center,
                     color = Color(0xff1e1e1e),
                     style = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium
                     ),
-                    modifier = Modifier.padding(start = 50.dp, top = 5.dp)
+                    modifier = Modifier.padding(start = 60.dp, top = 5.dp)
                 )
             }
 
@@ -372,90 +372,15 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
 
         }
 
-        //Battery Level
         Row(
             modifier = Modifier
-                .padding(top = 255.dp)
+                .padding(top = 280.dp)
                 .padding(start = 5.dp)
         ) {
 
             Box(
                 modifier = Modifier
-                    // .offset(y = -115.dp, x = -80.dp)
-                    .requiredWidth(width = 180.dp)
-                    .requiredHeight(height = 40.dp)
-                    .clip(shape = RoundedCornerShape(6.dp))
-                    .background(color = Color.White)
-                    .border(
-                        border = BorderStroke(4.dp, Color.LightGray),
-                        shape = RoundedCornerShape(6.dp)
-                    )
-            ) {
-
-                Text(
-                    text = "Sound",
-                    textAlign = TextAlign.Center,
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium
-                    ),
-                    modifier = Modifier.padding(start = 60.dp, top = 5.dp)
-                )
-
-
-            }
-
-            //radio buttons
-            Box(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .selectableGroup()
-            ) {
-                RadioButton(
-                    selected = vibration,
-                    onClick = { vibration = true },
-                    modifier = Modifier
-                )
-                Text(
-                    text = "ON",
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium),
-                    modifier = Modifier
-                        .padding(start = 40.dp)
-                        .padding(top = 10.dp))
-
-                RadioButton(
-                    selected = !vibration,
-                    onClick = { vibration = false },
-                    modifier = Modifier
-                        .padding(start = 70.dp))
-
-                Text(
-                    text = "OFF",
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium),
-                    modifier = Modifier
-                        .padding(start = 110.dp)
-                        .padding(top = 10.dp))
-
-            }
-        }
-
-        //Battery Level
-        Row(
-            modifier = Modifier
-                .padding(top = 300.dp)
-                .padding(start = 5.dp)
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .padding(top = 30.dp)
+                    .padding(top = 20.dp)
                     .requiredWidth(width = 180.dp)
                     .requiredHeight(height = 40.dp)
                     .clip(shape = RoundedCornerShape(6.dp))
@@ -479,9 +404,9 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
 
 
             }
-
-            statuses[0] = notificationFrequency
-            SelectionDropDown(statuses)
+            
+            Log.d("Before passing to dropdown", "Notification frequency: $notificationFrequency")
+            SelectionDropDown(statuses, notificationFrequency)
 
         }
 
@@ -492,12 +417,12 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
         contentDescription = "Vector 38",
         modifier = Modifier
             .requiredWidth(width = 400.dp)
-            .padding(top = 400.dp)
+            .padding(top = 355.dp)
     )
 
     //Account Settings
     Box(
-        modifier = Modifier.padding(top = 400.dp)
+        modifier = Modifier.padding(top = 370.dp)
     ) {
 
         Text(
