@@ -31,7 +31,7 @@ interface ApiService {
     @GET("/api/settings")
     fun getUserSettings(@Header("X-Access-Token") token: String): Call<SettingsRequest>
 
-    @POST("updateUserSettings")
-    fun updateUserSettings(@Body settings: SettingsRequest): Call<SettingsResponse>
+    @POST("/api/settings")
+    fun updateUserSettings(@Header("X-Access-Token") token: String, @Body settings: SettingsRequest): Call<SettingsResponse>
 
 }

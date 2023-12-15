@@ -27,9 +27,9 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         return apiService.getUserSettings(token)
     }
 
-    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
-        return apiService.updateUserSettings(requestBody)
-    }
+//    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
+//        return apiService.updateUserSettings(requestBody)
+//    }
 
 //    fun fetchAirQualityData(token: String, onSuccess: (HomeData?) -> Unit, onError: (String) -> Unit) {
 //        val call = getAirQualityData(token)
@@ -86,6 +86,23 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
             }
 
             override fun onFailure(call: Call<SettingsRequest>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun updateUserSettings(token: String, settings: SettingsRequest, onSuccess: (SettingsResponse?) -> Unit, onError: (String) -> Unit) {
+        val call = apiService.updateUserSettings(token, settings)
+        call.enqueue(object : Callback<SettingsResponse> {
+            override fun onResponse(call: Call<SettingsResponse>, response: Response<SettingsResponse>) {
+                if (response.isSuccessful) {
+                    onSuccess(response.body())
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<SettingsResponse>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })

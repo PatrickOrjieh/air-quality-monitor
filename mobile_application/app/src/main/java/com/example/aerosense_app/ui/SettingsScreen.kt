@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,13 +36,9 @@ import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
 import com.example.aerosense_app.SettingsRequest
-import com.example.aerosense_app.SettingsResponse
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import com.example.aerosense_app.ui.components.SelectionDropDown
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 
 //Github copilot used when writing some of this code
@@ -90,32 +85,6 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
         Log.d("SettingsError", "Error: Firebase token is null or blank")
     }
 
-    // Observe changes in sound value and update the server accordingly
-    LaunchedEffect(sound) {
-
-        val requestBody = SettingsRequest("Only When Critical", vibration, sound)
-
-        val call = repository.updateUserSettings(requestBody)
-        call.enqueue(object : Callback<SettingsResponse> {
-            override fun onResponse(
-                call: Call<SettingsResponse>,
-                response: Response<SettingsResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val settingsResponse = response.body()
-                    Log.d("Settings", "success: $settingsResponse")
-                } else {
-                    val settingsResponse = response.body()
-                    Log.d("Settings", "onResponse: $settingsResponse")
-                }
-            }
-
-            override fun onFailure(call: Call<SettingsResponse>, t: Throwable) {
-                val errorMessage = "Network error: ${t.message}"
-                Log.d("Settings", "onResponse: $errorMessage")
-            }
-        })
-    }
 
 
     NavBar(navController)
@@ -328,8 +297,6 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
                     ),
                     modifier = Modifier.padding(start = 50.dp, top = 5.dp)
                 )
-
-
             }
 
             //radio buttons
@@ -341,11 +308,21 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
                 RadioButton(
                     selected = sound,
                     onClick = {
-
                               sound = true
 
+                        val requestBody = SettingsRequest("it changed", vibration, sound)
 
+                        if (token != null) {
+                            repository.updateUserSettings(token, requestBody,
+                                onSuccess = { settingsResponse ->
 
+                                    Log.d("Settings", "Success: $settingsResponse")
+                                },
+                                onError = { errorMessage ->
+                                    Log.d("Settings", "Error: $errorMessage")
+                                }
+                            )
+                        }
                     },
                     modifier = Modifier
                 )
@@ -361,7 +338,23 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
 
                 RadioButton(
                     selected = !sound,
-                    onClick = { sound = false },
+                    onClick = { sound = false
+
+                        val requestBody = SettingsRequest("it changed", vibration, sound)
+
+                        if (token != null) {
+                            repository.updateUserSettings(token, requestBody,
+                                onSuccess = { settingsResponse ->
+
+                                    Log.d("Settings", "Success: $settingsResponse")
+                                },
+                                onError = { errorMessage ->
+                                    Log.d("Settings", "Error: $errorMessage")
+                                }
+                            )
+                        }
+
+                              },
                     modifier = Modifier
                         .padding(start = 70.dp))
 
@@ -487,6 +480,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
 
             }
 
+            statuses[0] = notificationFrequency
             SelectionDropDown(statuses)
 
         }
