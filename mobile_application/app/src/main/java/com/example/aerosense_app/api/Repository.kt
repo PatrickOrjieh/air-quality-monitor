@@ -8,12 +8,11 @@ import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
 import com.example.aerosense_app.SettingsRequest
 import com.example.aerosense_app.SettingsResponse
-import com.example.aerosense_app.database.AppDatabase
+import com.example.aerosense_app.database.HomeDataDao
 import io.reactivex.Single
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.aerosense_app.database.HomeDataDao
 
 //Github copilot used while writing this code
 
@@ -24,8 +23,8 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         return apiService.getAirQualityData(token)
     }
 
-    fun getUserSettings(): Call<SettingsRequest> {
-        return apiService.getUserSettings()
+    fun getUserSettings(token: String): Call<SettingsRequest> {
+        return apiService.getUserSettings(token)
     }
 
     fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
@@ -72,6 +71,26 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
             }
         })
     }
+
+    fun fetchSettings(token: String, onSuccess: (SettingsRequest?) -> Unit, onError: (String) -> Unit) {
+        val call = getUserSettings(token)
+        call.enqueue(object : Callback<SettingsRequest> {
+            override fun onResponse(call: Call<SettingsRequest>, response: Response<SettingsRequest>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<SettingsRequest>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
 
     fun saveAirQualityData(homeData: HomeData) {
         Thread {

@@ -23,10 +23,9 @@ import com.example.aerosense_app.ui.Register
 import com.example.aerosense_app.ui.ResetPassword
 import com.example.aerosense_app.ui.Settings
 import com.example.aerosense_app.ui.dataScreen
-import com.example.aerosense_app.ui.EducationPage
 
 enum class Screen {
-                  SplashScreen,
+    SplashScreen,
     Register,
     Login,
     ResetPassword,
@@ -60,7 +59,7 @@ enum class Screen {
                     composable("Login") { Login(navController, repository, firebaseModel) }
                     composable("Register") { Register(navController, repository, firebaseModel) }
                     composable("dataScreen") { dataScreen(navController, repository, firebaseModel) }
-                    composable("Settings") { Settings(navController, repository) }
+                    composable("Settings") { Settings(navController, repository, firebaseModel) }
                     composable("EducationPage") { EducationPage(navController) }
                     composable("Location") { Location(
                 state = viewModel.state.value,

@@ -1,6 +1,7 @@
 package com.example.aerosense_app.api
 
 import com.example.aerosense_app.HomeData
+import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
 import com.example.aerosense_app.RegisterRequest
@@ -19,13 +20,16 @@ interface ApiService {
     @GET("/api/home")
     fun getAirQualityData(@Header("X-Access-Token") token: String): Call<HomeData>
 
+    @GET("/api/location")
+    fun getLocationData(@Header("X-Access-Token") token: String): Call<LocationData>
+
     @POST("/api/register")
     fun registerUser(@Body request: RegisterRequest): Single<RegisterResponse>
 
     @POST("login")
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
     @GET("/api/settings")
-    fun getUserSettings(): Call<SettingsRequest>
+    fun getUserSettings(@Header("X-Access-Token") token: String): Call<SettingsRequest>
 
     @POST("updateUserSettings")
     fun updateUserSettings(@Body settings: SettingsRequest): Call<SettingsResponse>

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
 import com.example.aerosense_app.SettingsRequest
@@ -49,20 +50,50 @@ import retrofit2.Response
 
 
 @Composable
-fun Settings(navController: NavHostController, repository: Repository){
+fun Settings(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel){
     var connected by remember { mutableStateOf(true) }
     var battery by remember { mutableIntStateOf(0) }
-    var vibration by remember { mutableStateOf(true) }
     var sound by remember { mutableStateOf(true) }
+    var notificationFrequency by remember { mutableStateOf("") }
     val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
 
     battery = 65
+    var vibration: Boolean = true
+
+    // Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        repository.fetchSettings(token,
+            onSuccess = { settingsRequest ->
+                if (settingsRequest != null) {
+                    sound = settingsRequest.sound
+                }
+                if (settingsRequest != null) {
+                    vibration = settingsRequest.vibration
+                }
+                if (settingsRequest != null) {
+                    notificationFrequency = settingsRequest.notificationFrequency
+                }
+
+
+                Log.d("Check settings data", "Settings data: $settingsRequest")
+            },
+            onError = { errorMessage ->
+                Log.d("Check Settings Data", "Error: $errorMessage")
+            }
+        )
+    } else {
+        Log.d("SettingsError", "Error: Firebase token is null or blank")
+    }
 
     // Observe changes in sound value and update the server accordingly
     LaunchedEffect(sound) {
 
         val requestBody = SettingsRequest("Only When Critical", vibration, sound)
-
 
         val call = repository.updateUserSettings(requestBody)
         call.enqueue(object : Callback<SettingsResponse> {
@@ -74,8 +105,8 @@ fun Settings(navController: NavHostController, repository: Repository){
                     val settingsResponse = response.body()
                     Log.d("Settings", "success: $settingsResponse")
                 } else {
-                    val errorMessage = "Failed to update settings"
-                    Log.d("Settings", "onResponse: $errorMessage")
+                    val settingsResponse = response.body()
+                    Log.d("Settings", "onResponse: $settingsResponse")
                 }
             }
 
@@ -309,7 +340,13 @@ fun Settings(navController: NavHostController, repository: Repository){
             ) {
                 RadioButton(
                     selected = sound,
-                    onClick = { sound = true },
+                    onClick = {
+
+                              sound = true
+
+
+
+                    },
                     modifier = Modifier
                 )
                 Text(
