@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app import app, db
-from app.models import User, Hub, UserSetting
+from app.models import User, Hub, UserSetting, AsthmaProfile
 from werkzeug.security import generate_password_hash
 import firebase_admin
 from firebase_admin import auth, credentials
@@ -48,6 +48,11 @@ def register_user():
         #insert into user_settings the default settings
         new_user_settings = UserSetting(userID=new_user.userID, notificationFrequency="only when critical", vibration=True, sound=True)
         db.session.add(new_user_settings)
+        db.session.commit()
+
+        # Insert default asthma profile
+        new_asthma_profile = AsthmaProfile(userID=new_user.userID, personalTrigger="Fumes", asthmaCondition="Mild intermittent asthma")
+        db.session.add(new_asthma_profile)
         db.session.commit()
 
         return jsonify({"message": "User registered successfully", "userID": new_user.userID}), 201

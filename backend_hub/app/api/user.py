@@ -50,6 +50,12 @@ def register_user():
         mysql.connection.commit()
         cursor.close()
 
+        # Insert default asthma profile
+        cursor = mysql.connection.cursor()
+        cursor.execute('INSERT INTO AsthmaProfile (userID, personalTrigger, asthmaCondition) VALUES (%s, %s, %s)', (user_id, "Fumes", "Mild intermittent asthma"))
+        mysql.connection.commit()
+        cursor.close()
+
         return jsonify({"message": "User registered successfully", "userID": user_id}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
