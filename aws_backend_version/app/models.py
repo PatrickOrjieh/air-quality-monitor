@@ -51,6 +51,7 @@ class Notification(db.Model):
     __tablename__ = 'Notification'
     notificationID = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey('User.userID'), nullable=False)
+    heading = db.Column(db.String(255), nullable=False)
     message = db.Column(db.Text, nullable=False)
     isRead = db.Column(db.Boolean, nullable=False, default=False)
     createdAt = db.Column(db.DateTime)

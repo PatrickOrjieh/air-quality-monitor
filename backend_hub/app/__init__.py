@@ -26,5 +26,6 @@ from app.api import user
 from app.api import data
 from app.api import hub
 from app.api import pollen
+from app.api import location
 
 start_background_task(app)
