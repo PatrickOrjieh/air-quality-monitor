@@ -250,52 +250,45 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
 
                 Button(
                     onClick = {
-
                         email = email.trim()
-                        Log.d("Login", "Email: $email")
+                        password = password.trim()
 
-                        FirebaseAuth
-                            .getInstance()
-                            .signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener { signInTask ->
-                                if (signInTask.isSuccessful) {
-                                    // Login successful, get the user and ID token
-                                    val user = FirebaseAuth.getInstance().currentUser
-                                    user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
-                                        if (tokenTask.isSuccessful) {
-                                            val idToken = tokenTask.result?.token
+                        if (email.isEmpty() || password.isEmpty()) {
+                            loginError = "Invalid login details"
+                        } else {
+                            FirebaseAuth.getInstance()
+                                .signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { signInTask ->
+                                    if (signInTask.isSuccessful) {
+                                        // Login successful, get the user and ID token
+                                        val user = FirebaseAuth.getInstance().currentUser
+                                        user?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                                            if (tokenTask.isSuccessful) {
+                                                val idToken = tokenTask.result?.token
 
-                                            Log.d("LoginToken", "idToken: $idToken")
+                                                Log.d("LoginToken", "idToken: $idToken")
 
-                                            // Set the token in the ViewModel
-                                            firebaseModel.firebaseToken = idToken
+                                                // Set the token in the ViewModel
+                                                firebaseModel.firebaseToken = idToken
 
-                                            // Navigate to the data screen
-                                            navController.navigate(Screen.DataScreen.name)
-                                        } else {
-                                            // Handle error in getting ID token
-                                            loginError = "Error in getting Firebase ID token"
+                                                // Navigate to the data screen
+                                                navController.navigate(Screen.DataScreen.name)
+                                            } else {
+                                                // Handle error in getting ID token
+                                                loginError = "Error in getting Firebase ID token"
+                                            }
                                         }
+                                    } else {
+                                        // Login failed
+                                        Log.d("Login", "Login failed")
+                                        loginError = "Invalid login details"
                                     }
-                                } else {
-                                    // Login failed
-                                    Log.d("Login", "Login failed")
+                                }
+                                .addOnFailureListener {
+                                    Log.d("Login", "Login failed: ${it.localizedMessage}")
                                     loginError = "Invalid login details"
                                 }
-                            }
-                            .addOnFailureListener {
-                                Log.d("Login", "Login failed: ${it.localizedMessage}")
-                                loginError = "Invalid login details"
-                            }
-
-
-
-//                        if (validEmail && validPassword) {
-//
-//                            navController.navigate(Screen.DataScreen.name)
-//                        } else {
-//                            loginError = "Invalid login details"
-//                        }
+                        }
                     },
                     modifier = Modifier
                         .height(53.dp)
@@ -310,7 +303,6 @@ fun Login(navController: NavHostController, repository: Repository, firebaseMode
                 horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = 10.dp)
             ) {
 
                 //Make text for not having account and click to register

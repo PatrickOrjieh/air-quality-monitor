@@ -404,7 +404,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
 
 
             }
-            
+
             Log.d("Before passing to dropdown", "Notification frequency: $notificationFrequency")
             SelectionDropDown(statuses, notificationFrequency)
 

@@ -2,6 +2,7 @@ package com.example.aerosense_app.api
 
 import android.util.Log
 import com.example.aerosense_app.HomeData
+import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
 import com.example.aerosense_app.RegisterRequest
@@ -25,6 +26,10 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 
     fun getUserSettings(token: String): Call<SettingsRequest> {
         return apiService.getUserSettings(token)
+    }
+
+    fun getLocationData(): Call<LocationData> {
+        return apiService.getLocationData()
     }
 
 //    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
@@ -86,6 +91,25 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
             }
 
             override fun onFailure(call: Call<SettingsRequest>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun fetchLocation(token: String, onSuccess: (LocationData?) -> Unit, onError: (String) -> Unit) {
+        val call = getLocationData()
+        call.enqueue(object : Callback<LocationData> {
+            override fun onResponse(call: Call<LocationData>, response: Response<LocationData>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<LocationData>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })

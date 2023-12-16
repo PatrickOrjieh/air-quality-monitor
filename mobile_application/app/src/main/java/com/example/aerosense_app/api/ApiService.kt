@@ -21,7 +21,7 @@ interface ApiService {
     fun getAirQualityData(@Header("X-Access-Token") token: String): Call<HomeData>
 
     @GET("/api/location")
-    fun getLocationData(@Header("X-Access-Token") token: String): Call<LocationData>
+    fun getLocationData(): Call<LocationData>
 
     @POST("/api/register")
     fun registerUser(@Body request: RegisterRequest): Single<RegisterResponse>
@@ -33,5 +33,8 @@ interface ApiService {
 
     @POST("/api/settings")
     fun updateUserSettings(@Header("X-Access-Token") token: String, @Body settings: SettingsRequest): Call<SettingsResponse>
+
+//    @GET("/api/location")
+//    fun getLocation(@Header("X-Access-Token") token: String): Call<LocationData>
 
 }
