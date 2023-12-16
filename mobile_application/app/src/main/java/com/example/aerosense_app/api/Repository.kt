@@ -5,6 +5,7 @@ import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
+import com.example.aerosense_app.Notification
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
 import com.example.aerosense_app.SettingsRequest
@@ -30,6 +31,10 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 
     fun getLocationData(): Call<LocationData> {
         return apiService.getLocationData()
+    }
+
+    fun getUserNotifications(token: String): Call<Notification> {
+        return apiService.getUserNotifications(token)
     }
 
 //    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
@@ -91,6 +96,25 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
             }
 
             override fun onFailure(call: Call<SettingsRequest>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun fetchUserNotifications(token: String, onSuccess: (Notification?) -> Unit, onError: (String) -> Unit) {
+        val call = getUserNotifications(token)
+        call.enqueue(object : Callback<Notification> {
+            override fun onResponse(call: Call<Notification>, response: Response<Notification>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Notification>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })

@@ -1,5 +1,8 @@
 package com.example.aerosense_app.ui
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -14,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,28 +35,54 @@ import com.example.aerosense_app.R
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 
+
+data class Notifications(
+    val time: String,
+    val header: String,
+    val message: String
+)
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Notifications(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel){
     var time by remember { mutableStateOf("") }
+    var header by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
     NavBar(navController)
 
-
     // Sample notification data
-    val notifications = listOf(
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as very bad. Please take caution when going outside."),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as very bad. Please take caution when going outside."),
-    )
+    var notifications = remember { mutableStateListOf(Notifications("time","header","message")) }
+
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        notifications.clear()
+        // Use the token to make the API call
+        repository.fetchUserNotifications(token,
+            onSuccess = { notification ->
+                if (notification != null) {
+                    time = notification.time[0].toString()
+                }
+                if (notification != null) {
+                    header = notification.header[0]
+                }
+                if (notification != null) {
+                    message = notification.message[0]
+                }
+
+                notifications.add(Notifications(time, header, message))
+
+            },
+            onError = { errorMessage ->
+                Log.d("Notification Screen", "Error: $errorMessage")
+            }
+        )
+    } else {
+        Log.d("Notification Screen", "Error")
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -79,14 +109,8 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
     }
 }
 
-data class Notification(
-    val time: String,
-    val header: String,
-    val message: String
-)
-
 @Composable
-fun NotificationCard(notification: Notification) {
+fun NotificationCard(notification: Notifications) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(

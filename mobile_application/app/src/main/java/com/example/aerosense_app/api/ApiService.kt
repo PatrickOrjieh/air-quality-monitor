@@ -4,6 +4,7 @@ import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
+import com.example.aerosense_app.Notification
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
 import com.example.aerosense_app.SettingsRequest
@@ -33,6 +34,9 @@ interface ApiService {
 
     @POST("/api/settings")
     fun updateUserSettings(@Header("X-Access-Token") token: String, @Body settings: SettingsRequest): Call<SettingsResponse>
+
+    @GET("/api/notifications")
+    fun getUserNotifications(@Header("X-Access-Token") token: String): Call<Notification>
 
 //    @GET("/api/location")
 //    fun getLocation(@Header("X-Access-Token") token: String): Call<LocationData>
