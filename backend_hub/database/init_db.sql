@@ -52,6 +52,7 @@ CREATE TABLE AirQualityMeasurement (
 CREATE TABLE Notification (
     notificationID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,
+    heading VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     isRead BOOLEAN NOT NULL DEFAULT FALSE,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
