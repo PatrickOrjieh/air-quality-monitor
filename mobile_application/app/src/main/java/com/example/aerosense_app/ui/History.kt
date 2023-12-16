@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -33,13 +35,17 @@ import com.example.aerosense_app.ui.components.NavBar
 
 @Composable
 fun History(navController: NavHostController){
-    var airPercent by remember { mutableIntStateOf(0) }
-    var highPM by remember { mutableIntStateOf(0) }
+    var airPercent by remember { mutableFloatStateOf(0f) }
+    var pmTwo by remember { mutableIntStateOf(0) }
+    var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     var highVOC by remember { mutableIntStateOf(0) }
+    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
+    var voc by remember { mutableFloatStateOf(0.0F) }
+    var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
 
     //hardcoded values for now
-    airPercent = 80
-    highPM = 100
+    airPercent = 80f
+    pmTwo = 100
     highVOC = 50
 
     NavBar(navController)
@@ -51,7 +57,7 @@ fun History(navController: NavHostController){
         style = TextStyle(
             fontSize = 35.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 80.dp)
+        modifier = Modifier.padding(top = 90.dp)
     )
 
     Text(
@@ -61,18 +67,60 @@ fun History(navController: NavHostController){
         style = TextStyle(
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 140.dp)
+        modifier = Modifier.padding(top = 170.dp)
     )
-    
+
     DrawGraph()
 
+    if(pmTwo >=0 && pmTwo <= 10){
+        //Make the color green
+        pmTwoColor = Color(0xffff50f413 )
+    }
+    else if(pmTwo > 10 && pmTwo <= 20) {
+        pmTwoColor = Color(0xffffa629)
+    }
+    else if(pmTwo > 20 && pmTwo <= 25){
+        pmTwoColor = Color(0xfff24822)
+    }
+    else{
+        pmTwoColor = Color(0xffaf21d2)
+    }
+
+    if(voc > 0.0 && voc <= 0.5){
+        //Make the color green
+        vocColor = Color(0xffff50f413 )
+    }
+    else if(voc > 0.5 && voc <= 1.0) {
+        vocColor = Color(0xffffa629)
+    }
+    else if(voc > 1.0 && voc <= 2.0){
+        vocColor = Color(0xfff24822)
+    }
+    else{
+        vocColor = Color(0xffaf21d2)
+    }
+
+    Text(
+        text = "Weekly Averages:",
+        textAlign = TextAlign.Center,
+        color = Color(0xff1e1e1e),
+        style = TextStyle(
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium),
+        modifier = Modifier.padding(top = 520.dp)
+    )
+
     Box(
-        modifier = Modifier.padding(top = 440.dp)
+        modifier = Modifier.padding(top = 20.dp)
+    ){
+
+    Box(
+        modifier = Modifier.padding(top = 560.dp)
             .padding(start = 20.dp)
     ) {
         Text(
-            text = "Average Air Cleanliness:",
-            color = Color(0xff1e1e1e),
+            text = "Cleanliness",
+            color = getAirQualityColor(airPercent),
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -80,22 +128,22 @@ fun History(navController: NavHostController){
         )
 
         Text(
-            text = "-> $airPercent%",
+            text = "$airPercent%",
             color = Color(0xff1e1e1e),
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp)
+            modifier = Modifier.padding(top = 30.dp, start= 30.dp)
         )
     }
 
     Box(
-        modifier = Modifier.padding(top = 510.dp)
-            .padding(start = 20.dp)
+        modifier = Modifier.padding(top = 560.dp)
+            .padding(start = 175.dp)
     ) {
         Text(
-            text = "Highest PM This Week:",
-            color = Color(0xff1e1e1e),
+            text = "PM",
+            color = pmTwoColor,
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -103,31 +151,32 @@ fun History(navController: NavHostController){
         )
 
         Text(
-            text = "-> $highPM µg/m^3",
+            text = "$pmTwo µg/m^3",
             color = Color(0xff1e1e1e),
             style = TextStyle(
                 fontSize = 20.sp,
             ),
             modifier = Modifier.padding(top = 30.dp)
+                .offset(x = -35.dp)
         )
 
-        Text(
-            text = "-> Date: 11/12/23",
-            color = Color(0xff1e1e1e),
-            style = TextStyle(
-                fontSize = 20.sp,
-            ),
-            modifier = Modifier.padding(top = 60.dp)
-        )
+//        Text(
+//            text = "-> Date: 11/12/23",
+//            color = Color(0xff1e1e1e),
+//            style = TextStyle(
+//                fontSize = 20.sp,
+//            ),
+//            modifier = Modifier.padding(top = 60.dp)
+//        )
     }
 
     Box(
-        modifier = Modifier.padding(top = 610.dp)
-            .padding(start = 20.dp)
+        modifier = Modifier.padding(top = 560.dp)
+            .padding(start = 280.dp)
     ) {
         Text(
-            text = "Highest VOC This Week:",
-            color = Color(0xff1e1e1e),
+            text = "VOC",
+            color = vocColor,
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -135,22 +184,24 @@ fun History(navController: NavHostController){
         )
 
         Text(
-            text = "-> $highVOC ppb",
+            text = "$highVOC ppb",
             color = Color(0xff1e1e1e),
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp)
+            modifier = Modifier.padding(top = 30.dp, start = 10.dp)
+                .offset(x = -20.dp)
         )
+    }
 
-        Text(
-            text = "-> Date: 10/12/23",
-            color = Color(0xff1e1e1e),
-            style = TextStyle(
-                fontSize = 20.sp,
-            ),
-            modifier = Modifier.padding(top = 60.dp)
-        )
+//        Text(
+//            text = "-> Date: 10/12/23",
+//            color = Color(0xff1e1e1e),
+//            style = TextStyle(
+//                fontSize = 20.sp,
+//            ),
+//            modifier = Modifier.padding(top = 60.dp)
+//        )
     }
 
 }
@@ -158,6 +209,8 @@ fun History(navController: NavHostController){
 //Parts of graph code adapted from: https://stackoverflow.com/questions/58589507/draw-simple-xy-graph-plot-with-kotlin-without-3rd-party-library
 @Composable
 fun DrawGraph() {
+    var yaxisDifference by remember { mutableIntStateOf(48) }
+
     // Sample data for Monday to Sunday
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -170,10 +223,9 @@ fun DrawGraph() {
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start= 30.dp)
-            .requiredHeight(200.dp)
-            .requiredWidth(250.dp)
-            .offset(y = (-60).dp)
+            .padding(start= 5.dp)
+            .requiredHeight(230.dp)
+            .requiredWidth(280.dp)
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
@@ -206,6 +258,20 @@ fun DrawGraph() {
             strokeWidth = 2f
         )
 
+        for (i in 0..5) {
+            // Calculate y-axis position based on index
+            val yCoord = canvasHeight - i * 20f * scaleY
+
+            // Draw axis line
+            drawLine(
+                color = Color.Gray,
+                start = Offset(0f, yCoord),
+                end = Offset(canvasWidth, yCoord),
+                strokeWidth = 1f
+            )
+        }
+
+
         // Draw axis labels and align with data points
         daysOfWeek.forEachIndexed { index, day ->
             val xCoord = index * scaleX * scaleFactor
@@ -222,7 +288,7 @@ fun DrawGraph() {
 
         val percentageLabels = listOf("0%", "20%", "40%", "60%", "80%", "100%")
         percentageLabels.forEachIndexed { index, label ->
-            val xCoord = -48.dp.toPx()
+            val xCoord = -35.dp.toPx()
             val yCoord = canvasHeight - index * 20f * scaleY
 
             // Draw Y-axis label
@@ -251,5 +317,4 @@ fun DrawGraph() {
         drawPath(path, color = Color.Blue, style = Stroke(4f))
     }
 }
-
 

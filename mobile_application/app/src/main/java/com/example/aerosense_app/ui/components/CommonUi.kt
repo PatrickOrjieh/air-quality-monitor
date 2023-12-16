@@ -3,6 +3,7 @@ package com.example.aerosense_app.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -76,6 +77,10 @@ fun DropDown(navController: NavHostController) {
                 onClick = { navController.navigate(Screen.History.name) }
             )
             DropdownMenuItem(
+                text = { Text("Notifications") },
+                onClick = { navController.navigate(Screen.Notifications.name) }
+            )
+            DropdownMenuItem(
                 text = { Text("Settings") },
                 onClick = { navController.navigate(Screen.Settings.name) }
             )
@@ -94,6 +99,7 @@ fun NavBar(navController: NavHostController){
             modifier = Modifier
                 .requiredWidth(width = 100.dp)
                 .requiredHeight(height = 93.dp)
+                .fillMaxSize()
         ) {
             //Blue background
             Box(
@@ -135,11 +141,11 @@ fun NavBar(navController: NavHostController){
 //Have to opt in for Experimental Material 3 API in order to use TextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionDropDown(selection: Array<String>) {
+fun SelectionDropDown(selection: Array<String>, selected: String) {
     //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(selection[0]) }
+    var selectedText by remember { mutableStateOf(selected) }
 
     Box(
         modifier = Modifier

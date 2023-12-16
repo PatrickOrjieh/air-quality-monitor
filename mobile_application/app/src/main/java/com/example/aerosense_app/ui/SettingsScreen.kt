@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,58 +32,59 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
 import com.example.aerosense_app.SettingsRequest
-import com.example.aerosense_app.SettingsResponse
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import com.example.aerosense_app.ui.components.SelectionDropDown
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 
 //Github copilot used when writing some of this code
 
 
 @Composable
-fun Settings(navController: NavHostController, repository: Repository){
+fun Settings(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel){
     var connected by remember { mutableStateOf(true) }
     var battery by remember { mutableIntStateOf(0) }
-    var vibration by remember { mutableStateOf(true) }
     var sound by remember { mutableStateOf(true) }
+    var notificationFrequency by remember { mutableStateOf("") }
     val statuses = arrayOf("Only when critical", "Dangerous or below", "Moderate or below")
 
     battery = 65
+    var vibration: Boolean = true
 
-    // Observe changes in sound value and update the server accordingly
-    LaunchedEffect(sound) {
+    // Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
 
-        val requestBody = SettingsRequest("Only When Critical", vibration, sound)
-
-
-        val call = repository.updateUserSettings(requestBody)
-        call.enqueue(object : Callback<SettingsResponse> {
-            override fun onResponse(
-                call: Call<SettingsResponse>,
-                response: Response<SettingsResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val settingsResponse = response.body()
-                    Log.d("Settings", "success: $settingsResponse")
-                } else {
-                    val errorMessage = "Failed to update settings"
-                    Log.d("Settings", "onResponse: $errorMessage")
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        repository.fetchSettings(token,
+            onSuccess = { settingsRequest ->
+                if (settingsRequest != null) {
+                    sound = settingsRequest.sound
                 }
-            }
+                if (settingsRequest != null) {
+                    vibration = settingsRequest.vibration
+                }
+                if (settingsRequest != null) {
+                    notificationFrequency = settingsRequest.notificationFrequency
+                }
 
-            override fun onFailure(call: Call<SettingsResponse>, t: Throwable) {
-                val errorMessage = "Network error: ${t.message}"
-                Log.d("Settings", "onResponse: $errorMessage")
+
+                Log.d("Check settings data", "Settings data: $settingsRequest")
+            },
+            onError = { errorMessage ->
+                Log.d("Check Settings Data", "Error: $errorMessage")
             }
-        })
+        )
+    } else {
+        Log.d("SettingsError", "Error: Firebase token is null or blank")
     }
+
 
 
     NavBar(navController)
@@ -270,82 +270,7 @@ fun Settings(navController: NavHostController, repository: Repository){
         //Device connection status
         Row(
             modifier = Modifier
-                .padding(top = 200.dp)
-                .padding(start = 5.dp)
-        ) {
-
-            Box(
-                modifier = Modifier
-                    // .offset(y = -115.dp, x = -80.dp)
-                    .requiredWidth(width = 180.dp)
-                    .requiredHeight(height = 40.dp)
-                    .clip(shape = RoundedCornerShape(6.dp))
-                    .background(color = Color.White)
-                    .border(
-                        border = BorderStroke(4.dp, Color.LightGray),
-                        shape = RoundedCornerShape(6.dp)
-                    )
-            ) {
-
-                Text(
-                    text = "Vibration",
-                    textAlign = TextAlign.Center,
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium
-                    ),
-                    modifier = Modifier.padding(start = 50.dp, top = 5.dp)
-                )
-
-
-            }
-
-            //radio buttons
-            Box(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .selectableGroup()
-            ) {
-                RadioButton(
-                    selected = sound,
-                    onClick = { sound = true },
-                    modifier = Modifier
-                )
-                Text(
-                    text = "ON",
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium),
-                    modifier = Modifier
-                        .padding(start = 40.dp)
-                        .padding(top = 10.dp))
-
-                RadioButton(
-                    selected = !sound,
-                    onClick = { sound = false },
-                    modifier = Modifier
-                        .padding(start = 70.dp))
-
-                Text(
-                    text = "OFF",
-                    color = Color(0xff1e1e1e),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium),
-                    modifier = Modifier
-                        .padding(start = 110.dp)
-                        .padding(top = 10.dp))
-
-            }
-
-        }
-
-        //Battery Level
-        Row(
-            modifier = Modifier
-                .padding(top = 255.dp)
+                .padding(top = 220.dp)
                 .padding(start = 5.dp)
         ) {
 
@@ -372,8 +297,6 @@ fun Settings(navController: NavHostController, repository: Repository){
                     ),
                     modifier = Modifier.padding(start = 60.dp, top = 5.dp)
                 )
-
-
             }
 
             //radio buttons
@@ -383,8 +306,24 @@ fun Settings(navController: NavHostController, repository: Repository){
                     .selectableGroup()
             ) {
                 RadioButton(
-                    selected = vibration,
-                    onClick = { vibration = true },
+                    selected = sound,
+                    onClick = {
+                              sound = true
+
+                        val requestBody = SettingsRequest("it changed", vibration, sound)
+
+                        if (token != null) {
+                            repository.updateUserSettings(token, requestBody,
+                                onSuccess = { settingsResponse ->
+
+                                    Log.d("Settings", "Success: $settingsResponse")
+                                },
+                                onError = { errorMessage ->
+                                    Log.d("Settings", "Error: $errorMessage")
+                                }
+                            )
+                        }
+                    },
                     modifier = Modifier
                 )
                 Text(
@@ -398,8 +337,24 @@ fun Settings(navController: NavHostController, repository: Repository){
                         .padding(top = 10.dp))
 
                 RadioButton(
-                    selected = !vibration,
-                    onClick = { vibration = false },
+                    selected = !sound,
+                    onClick = { sound = false
+
+                        val requestBody = SettingsRequest("it changed", vibration, sound)
+
+                        if (token != null) {
+                            repository.updateUserSettings(token, requestBody,
+                                onSuccess = { settingsResponse ->
+
+                                    Log.d("Settings", "Success: $settingsResponse")
+                                },
+                                onError = { errorMessage ->
+                                    Log.d("Settings", "Error: $errorMessage")
+                                }
+                            )
+                        }
+
+                              },
                     modifier = Modifier
                         .padding(start = 70.dp))
 
@@ -414,18 +369,18 @@ fun Settings(navController: NavHostController, repository: Repository){
                         .padding(top = 10.dp))
 
             }
+
         }
 
-        //Battery Level
         Row(
             modifier = Modifier
-                .padding(top = 300.dp)
+                .padding(top = 280.dp)
                 .padding(start = 5.dp)
         ) {
 
             Box(
                 modifier = Modifier
-                    .padding(top = 30.dp)
+                    .padding(top = 20.dp)
                     .requiredWidth(width = 180.dp)
                     .requiredHeight(height = 40.dp)
                     .clip(shape = RoundedCornerShape(6.dp))
@@ -450,7 +405,8 @@ fun Settings(navController: NavHostController, repository: Repository){
 
             }
 
-            SelectionDropDown(statuses)
+            Log.d("Before passing to dropdown", "Notification frequency: $notificationFrequency")
+            SelectionDropDown(statuses, notificationFrequency)
 
         }
 
@@ -461,12 +417,12 @@ fun Settings(navController: NavHostController, repository: Repository){
         contentDescription = "Vector 38",
         modifier = Modifier
             .requiredWidth(width = 400.dp)
-            .padding(top = 400.dp)
+            .padding(top = 355.dp)
     )
 
     //Account Settings
     Box(
-        modifier = Modifier.padding(top = 400.dp)
+        modifier = Modifier.padding(top = 370.dp)
     ) {
 
         Text(
