@@ -1,6 +1,7 @@
 package com.example.aerosense_app.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,17 +41,17 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
 
     // Sample notification data
     val notifications = listOf(
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
-        Notification("16/12/2023 16:25", "Bad Air Quality Detected"),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as very bad. Please take caution when going outside."),
+        Notification("16/12/2023 16:25", "Bad Air Quality Detected", "The air quality in your area has been detected as very bad. Please take caution when going outside."),
     )
 
     LazyColumn(
@@ -79,16 +80,20 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
 }
 
 data class Notification(
-    val sender: String,
-    val message: String,
+    val time: String,
+    val header: String,
+    val message: String
 )
 
 @Composable
 fun NotificationCard(notification: Notification) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable{ expanded = !expanded },
         shape = RoundedCornerShape(16.dp),
     ) {
         Row(
@@ -109,15 +114,23 @@ fun NotificationCard(notification: Notification) {
                     .padding(16.dp)
             ) {
                 Text(
-                    text = notification.sender,
+                    text = notification.time,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                 )
 
                 Text(
-                    text = notification.message,
+                    text = notification.header,
                     fontSize = 14.sp,
                 )
+
+                if (expanded) {
+                    Text(
+                        text = notification.message,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(top=15.dp)
+                    )
+                }
             }
         }
     }
