@@ -44,6 +44,10 @@ sensor_bme680.select_gas_heater_profile(0)
 SERIAL_PORT_PMS7003 = '/dev/ttyUSB0'
 ser_pms7003 = serial.Serial(SERIAL_PORT_PMS7003, baudrate=9600, timeout=1)
 
+# GPS setup
+SERIAL_PORT_GPS = '/dev/ttyS0'
+ser_gps = serial.Serial(SERIAL_PORT_GPS, baudrate=9600, timeout=1)
+
 # Thresholds
 TEMP_THRESHOLD = 30
 HUMIDITY_THRESHOLD = 57
@@ -64,6 +68,47 @@ def parse_pms7003_data(data):
         return pm1_0_cf1, pm2_5_cf1, pm10_cf1, pm1_0_atm, pm2_5_atm, pm10_atm
     else:
         return None
+    
+# Function to parse GNGGA or GPRMC sentences for latitude and longitude
+def parse_gps_data(data):
+    parts = data.split(',')
+    
+    if data.startswith('$GNGGA') or data.startswith('$GPRMC'):
+        latitude = parts[2]
+        longitude = parts[4]
+        
+        if latitude and longitude:
+            # Convert to decimal degrees
+            lat_deg = float(latitude[:2])
+            lat_min = float(latitude[2:])
+            lon_deg = float(longitude[:3])
+            lon_min = float(longitude[3:])
+
+            lat = lat_deg + (lat_min/60.0)
+            lon = lon_deg + (lon_min/60.0)
+
+            if parts[3] == 'S':
+                lat = -lat
+            if parts[5] == 'W':
+                lon = -lon
+
+            return lat, lon
+    return None
+
+def get_gps_data(serial_port, timeout=60):
+    start_time = time.time()
+    while True:
+        elapsed_time = time.time() - start_time
+        if elapsed_time > timeout:
+            print("GPS timeout reached. No valid data.")
+            return None, None
+        gps_data = serial_port.readline().decode('utf-8').strip()
+        if gps_data:
+            gps_parsed = parse_gps_data(gps_data)
+            if gps_parsed:
+                print(f"GPS Data Acquired: Latitude: {gps_parsed[0]}, Longitude: {gps_parsed[1]}")
+                return gps_parsed
+        time.sleep(0.5) 
 
 # PubNub callback class
 class MySubscribeCallback(SubscribeCallback):
@@ -112,12 +157,15 @@ def my_publish_callback(envelope, status):
 def main():
     try:
         while True:
+            # Initialize the variables with default values
             temp = None
             humidity = None
             gas_resistance = None
             voc_level = None
             pm2_5 = None
             pm10 = None
+            lat = None
+            lon = None
 
             # Attempt to read from BME680 sensor
             if sensor_bme680.get_sensor_data():
@@ -130,32 +178,44 @@ def main():
             data = ser_pms7003.read(32)
             if data:
                 pms_data = parse_pms7003_data(data)
-                pm2_5 = pms_data[1] if pms_data else None
-                pm10 = pms_data[2] if pms_data else None
+                if pms_data:
+                    pm2_5, pm10 = pms_data[1], pms_data[2]
 
+            # Check air quality before attempting to read GPS
             if None not in [temp, humidity, gas_resistance, pm2_5, pm10]:
-                # Construct the payload
-                data = {
-                    'modelNumber': "T5",
-                    'temperature': temp,
-                    'humidity': humidity,
-                    'gas_resistance': gas_resistance,
-                    'voc': voc_level,
-                    'pm2_5': pm2_5,
-                    'pm10': pm10
-                }
-
                 if check_air_quality(temp, humidity, gas_resistance, pm2_5, pm10):
-                    print("Poor air quality detected!")
+                    print("Poor air quality detected, waiting for GPS data.")
+                    lat, lon = get_gps_data(ser_gps)
+
+                    if lat is not None and lon is not None:
+                        print(f"GPS Data: Latitude: {lat}, Longitude: {lon}")
+                        # Construct data payload
+                        data = {
+                            'modelNumber': "T5",
+                            'temperature': temp,
+                            'humidity': humidity,
+                            'gas_resistance': gas_resistance,
+                            'voc': voc_level,
+                            'pm2_5': pm2_5,
+                            'pm10': pm10,
+                            'latitude': lat,
+                            'longitude': lon
+                        }
+                    else:
+                        print("No GPS data received within the timeout period.")
+
                     print(f"Data: {data}")
                     trigger_alert()
                     # Publish to PubNub
                     pubnub.publish().channel('aerosense_channel').message(data).pn_async(my_publish_callback)
+            else:
+                print("Waiting for valid sensor data...")
 
             time.sleep(1)
 
     except KeyboardInterrupt:
         ser_pms7003.close()
+        ser_gps.close()
         GPIO.cleanup()
 
 if __name__ == "__main__":
