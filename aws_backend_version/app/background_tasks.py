@@ -58,7 +58,7 @@ def store_data(data):
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             values = (
-                hubID, 1, 2.5, 10, data['voc'], data['temperature'],
+                hubID, data['pm1'], data['pm2_5'], data['pm10'], data['voc'], data['temperature'],
                 data['humidity'], data['gas_resistance'], 2
             )
             cursor.execute(query, values)
