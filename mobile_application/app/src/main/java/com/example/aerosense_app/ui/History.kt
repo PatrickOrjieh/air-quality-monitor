@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.FirebaseViewModel
-import com.example.aerosense_app.SettingsRequest
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import java.text.DecimalFormat
@@ -53,6 +52,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     val decimalFormat = DecimalFormat("#.##")
     var weekPercentages by remember { mutableStateOf(listOf(50.0, 80.0, 30.0, 60.0, 90.0, 20.0, 70.0))}
+    val options = arrayOf("This Week", "Last Week")
+    var selected  by remember { mutableStateOf("This Week")}
 
     NavBar(navController)
 
@@ -60,28 +61,62 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     val token = firebaseModel.firebaseToken
     Log.d("Token", "Token: $token")
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top= 120.dp)
+            .requiredWidth(170.dp)
+    ) {
+        HistorySelectionDropDown(
+            selection = options,
+            selected = selected,
+            token = token,
+            repository = repository,
+            onItemSelected = { selected = it }
+        )
+    }
+
 // Check if the token is not null
     if (!token.isNullOrBlank()) {
         // Use the token to make the API call
-        repository.fetchUserHistory(token,
-            onSuccess = { historyRequest ->
-                if (historyRequest != null) {
-                    airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
-                    pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
-                    voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
-                    weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
-                }
+        if(selected == "This Week") {
+            repository.fetchUserHistory(token,
+                onSuccess = { historyRequest ->
+                    if (historyRequest != null) {
+                        airPercent =
+                            decimalFormat.format(historyRequest.overall_avg_score).toDouble()
+                        pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
+                        voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                        weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
+                    }
 
-                Log.d("history data", "Settings data: $historyRequest")
-            },
-            onError = { errorMessage ->
-                Log.d("Check Settings Data", "Error: $errorMessage")
-            }
-        )
+                    Log.d("history data", "Settings data: $historyRequest")
+                },
+                onError = { errorMessage ->
+                    Log.d("Check Settings Data", "Error: $errorMessage")
+                }
+            )
+        }
+        else{
+            repository.fetchLastWeekHistory(token,
+                onSuccess = { historyRequest ->
+                    if (historyRequest != null) {
+                        airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
+                        pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
+                        voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                        weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
+                    }
+
+                    Log.d("history data", "Settings data: $historyRequest")
+                },
+                onError = { errorMessage ->
+                    Log.d("Check Settings Data", "Error: $errorMessage")
+                }
+            )
+        }
     } else {
         Log.d("SettingsError", "Error: Firebase token is null or blank")
     }
-
 
     Text(
         text = "History",
@@ -90,7 +125,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
         style = TextStyle(
             fontSize = 35.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 90.dp)
+        modifier = Modifier.padding(top = 70.dp)
     )
 
     Text(
@@ -100,7 +135,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
         style = TextStyle(
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 170.dp)
+        modifier = Modifier.padding(top = 190.dp)
     )
 
     DrawGraph(weekPercentages)
@@ -148,7 +183,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     ){
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 20.dp)
     ) {
         Text(
@@ -171,7 +207,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     }
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 175.dp)
     ) {
         Text(
@@ -189,7 +226,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp)
+            modifier = Modifier
+                .padding(top = 30.dp)
                 .offset(x = -45.dp)
         )
 
@@ -204,7 +242,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     }
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 280.dp)
     ) {
         Text(
@@ -222,7 +261,8 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp)
+            modifier = Modifier
+                .padding(top = 30.dp)
                 .offset(x = -20.dp)
         )
     }
@@ -255,7 +295,7 @@ fun DrawGraph(percentages: List<Double>) {
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start= 5.dp)
+            .padding(start = 5.dp)
             .requiredHeight(230.dp)
             .requiredWidth(280.dp)
     ) {
@@ -306,9 +346,7 @@ fun DrawGraph(percentages: List<Double>) {
 
         // Draw axis labels and align with data points
         daysOfWeek.forEachIndexed { index, day ->
-            Log.d("Percentages", "Index: ${percentages[index]}")
             val xCoord = index * scaleX * scaleFactor
-            val yCoord = canvasHeight - percentages[index] * scaleY
 
             // Draw X-axis label
             drawContext.canvas.nativeCanvas.drawText(
@@ -337,7 +375,15 @@ fun DrawGraph(percentages: List<Double>) {
         val path = Path()
         daysOfWeek.forEachIndexed { index, _ ->
             val xCoord = index * scaleX * scaleFactor
-            val yCoord = canvasHeight - percentages[index] * scaleY
+            var yCoord = 0.0
+
+            if (index < percentages.size) {
+                yCoord = canvasHeight - percentages[index] * scaleY
+            } else {
+                // Index is out of bounds, set yCoord to a default value
+                yCoord = canvasHeight - 0.0 * scaleY
+            }
+
             val point = Offset(xCoord, yCoord.toFloat())
 
             if (index == 0) {
@@ -353,7 +399,7 @@ fun DrawGraph(percentages: List<Double>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionDropDown(selection: Array<String>, selected: String, sound: Boolean, token: String?, repository: Repository, onItemSelected: (String) -> Unit) {
+fun HistorySelectionDropDown(selection: Array<String>, selected: String, token: String?, repository: Repository, onItemSelected: (String) -> Unit) {
     //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -385,21 +431,6 @@ fun SelectionDropDown(selection: Array<String>, selected: String, sound: Boolean
                     DropdownMenuItem(
                         text = { Text(text = item) },
                         onClick = {
-
-                            val requestBody = SettingsRequest("", false,sound)
-
-                            requestBody.notificationFrequency = item
-
-                            if (token != null) {
-                                repository.updateUserSettings(token, requestBody,
-                                    onSuccess = { settingsResponse ->
-                                        Log.d("Settings", "Success: $settingsResponse")
-                                    },
-                                    onError = { errorMessage ->
-                                        Log.d("Settings", "Error: $errorMessage")
-                                    }
-                                )
-                            }
 
                             onItemSelected(item)
 
