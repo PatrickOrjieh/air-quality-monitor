@@ -63,6 +63,7 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
         // Use the token to make the API call
         repository.fetchUserNotifications(token,
             onSuccess = { notification ->
+
                 if (notification != null) {
                     time = notification.time[0].toString()
                 }

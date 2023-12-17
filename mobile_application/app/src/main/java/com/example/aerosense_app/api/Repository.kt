@@ -172,7 +172,7 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 
 
     fun registerData(data: RegisterRequest): Single<RegisterResponse> {
-        val request = RegisterRequest(firebaseToken = data.firebaseToken, modelNumber = data.modelNumber)
+        val request = RegisterRequest(firebaseToken = data.firebaseToken, modelNumber = data.modelNumber, fcmToken = data.fcmToken)
         return apiService.registerUser(request)
     }
 

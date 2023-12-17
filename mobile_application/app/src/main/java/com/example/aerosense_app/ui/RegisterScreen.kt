@@ -42,7 +42,9 @@ import com.example.aerosense_app.R
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.Screen
 import com.example.aerosense_app.api.Repository
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
@@ -372,7 +374,13 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
 //                            error = "Invalid register details"
 //                        }
 
-                        if (error == null && enteredName && enteredEmail && enteredPassword && enteredConfirm && enteredModelNum) {
+                        Log.d("Register", "Name: $enteredName")
+                        Log.d("Register", "Email: $enteredEmail")
+                        Log.d("Register", "Password: $enteredPassword")
+                        Log.d("Register", "Confirm: $enteredConfirm")
+                        Log.d("Register", "Model Number: $enteredModelNum")
+
+                        if (enteredName && enteredEmail && enteredPassword && enteredConfirm && enteredModelNum) {
                             val auth = FirebaseAuth.getInstance()
 
                             auth.createUserWithEmailAndPassword(email, password)
@@ -388,8 +396,25 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
 
                                                 firebaseModel.firebaseToken = idToken
 
-                                                // Now send the ID token and model number to your backend
-                                                sendTokenToBackend(idToken, modelNum, navController, repository)
+                                                FirebaseMessaging.getInstance().token.addOnCompleteListener(
+                                                    OnCompleteListener { task ->
+                                                    if (!task.isSuccessful) {
+                                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                                        return@OnCompleteListener
+                                                    }
+
+                                                    // Get new FCM registration token
+                                                    val fcmToken = task.result
+
+                                                        Log.d("FCM", "Token: $fcmToken")
+
+                                                    // Log and toast
+//                                                    val msg = getString(R.string.msg_token_fmt, token)
+//                                                    Log.d(TAG, msg)
+                                                    //Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                                                    sendTokenToBackend(idToken, modelNum, fcmToken, navController, repository)
+                                                })
+
                                             } else {
                                                 // Handle error in getting ID token
                                                 error = "Error in getting Firebase ID token"
@@ -437,10 +462,10 @@ fun Register(navController: NavHostController, repository: Repository, firebaseM
 
 }
 
-private fun sendTokenToBackend(token: String?, modelNum: String, navController: NavHostController, repository: Repository) {
+private fun sendTokenToBackend(token: String?, modelNum: String, fcmToken: String, navController: NavHostController, repository: Repository) {
     if (token != null) {
         // Assuming `repository.registerData` is your method to send data to the backend
-        repository.registerData(RegisterRequest(token, modelNum))
+        repository.registerData(RegisterRequest(token, modelNum, fcmToken))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
