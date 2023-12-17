@@ -74,7 +74,6 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
                     notificationFrequency = settingsRequest.notificationFrequency
                 }
 
-
                 Log.d("Check settings data", "Settings data: $settingsRequest")
             },
             onError = { errorMessage ->
@@ -84,8 +83,6 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
     } else {
         Log.d("SettingsError", "Error: Firebase token is null or blank")
     }
-
-
 
     NavBar(navController)
 
@@ -340,7 +337,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
                     selected = !sound,
                     onClick = { sound = false
 
-                        val requestBody = SettingsRequest("it changed", vibration, sound)
+                        val requestBody = SettingsRequest(notificationFrequency, vibration, sound)
 
                         if (token != null) {
                             repository.updateUserSettings(token, requestBody,
@@ -406,7 +403,9 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
             }
 
             Log.d("Before passing to dropdown", "Notification frequency: $notificationFrequency")
-            SelectionDropDown(statuses, notificationFrequency)
+            if(notificationFrequency != ""){
+                SelectionDropDown(statuses, notificationFrequency, sound, token, repository, onItemSelected = { notificationFrequency = it })
+            }
 
         }
 

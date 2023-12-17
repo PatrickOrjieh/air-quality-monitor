@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.R
 import com.example.aerosense_app.Screen
+import com.example.aerosense_app.SettingsRequest
+import com.example.aerosense_app.api.Repository
 
 @Composable
 fun DropDown(navController: NavHostController) {
@@ -141,7 +144,7 @@ fun NavBar(navController: NavHostController){
 //Have to opt in for Experimental Material 3 API in order to use TextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionDropDown(selection: Array<String>, selected: String) {
+fun SelectionDropDown(selection: Array<String>, selected: String, sound: Boolean, token: String?, repository: Repository, onItemSelected: (String) -> Unit) {
     //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -173,6 +176,24 @@ fun SelectionDropDown(selection: Array<String>, selected: String) {
                     DropdownMenuItem(
                         text = { Text(text = item) },
                         onClick = {
+
+                            val requestBody = SettingsRequest("", false,sound)
+
+                            requestBody.notificationFrequency = item
+
+                            if (token != null) {
+                                repository.updateUserSettings(token, requestBody,
+                                    onSuccess = { settingsResponse ->
+                                        Log.d("Settings", "Success: $settingsResponse")
+                                    },
+                                    onError = { errorMessage ->
+                                        Log.d("Settings", "Error: $errorMessage")
+                                    }
+                                )
+                            }
+
+                            onItemSelected(item)
+
                             selectedText = item
                             expanded = false
                         }
