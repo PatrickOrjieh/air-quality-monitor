@@ -2,18 +2,23 @@ package com.codingwithmitch.composegooglemaps.compose
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.codingwithmitch.composegooglemaps.clusters.ZoneClusterManager
+import com.example.aerosense_app.FirebaseViewModel
 import com.example.aerosense_app.MapState
+import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -35,10 +40,39 @@ fun Location(
     state: MapState,
     setupClusterManager: (Context, GoogleMap) -> ZoneClusterManager,
     calculateZoneViewCenter: () -> LatLngBounds,
-    navController: NavHostController
+    navController: NavHostController,
+    firebaseModel: FirebaseViewModel,
+    repository: Repository
 ) {
 
     NavBar(navController)
+
+    val locationList = remember { mutableStateListOf<LatLng>() }
+
+    // Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        repository.fetchLocationData(token,
+            onSuccess = { locationData ->
+                if (locationData != null) {
+                    // Assuming LocationData has 'latitude' and 'longitude' properties
+                    var lat = locationData
+
+                    Log.d("Check location data", "Location data: ${locationData[0].latitude}")
+                }
+                // Additional processing if needed
+            },
+            onError = { errorMessage ->
+                Log.d("Check Location Data", "Error: $errorMessage")
+            }
+        )
+    } else {
+        Log.d("LocationError", "Error: Firebase token is null or blank")
+    }
 
     // Set properties using MapProperties which you can use to recompose the map
     val mapProperties = MapProperties(

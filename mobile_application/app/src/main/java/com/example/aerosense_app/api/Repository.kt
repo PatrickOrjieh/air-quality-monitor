@@ -6,6 +6,7 @@ import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
 import com.example.aerosense_app.LoginResponse
 import com.example.aerosense_app.Notification
+import com.example.aerosense_app.ProfileRequest
 import com.example.aerosense_app.RegisterRequest
 import com.example.aerosense_app.RegisterResponse
 import com.example.aerosense_app.SettingsRequest
@@ -29,12 +30,16 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         return apiService.getUserSettings(token)
     }
 
-    fun getLocationData(): Call<LocationData> {
-        return apiService.getLocationData()
+    fun getLocations(token: String): Call<List<LocationData>> {
+        return apiService.getLocationData(token)
     }
 
     fun getUserNotifications(token: String): Call<Notification> {
         return apiService.getUserNotifications(token)
+    }
+
+    fun getAsthmaProfile(token: String): Call<ProfileRequest> {
+        return apiService.getAsthmaProfile(token)
     }
 
 //    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
@@ -62,7 +67,11 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 //        })
 //    }
 
-    fun fetchAirQualityData(token: String, onSuccess: (HomeData?) -> Unit, onError: (String) -> Unit) {
+    fun fetchAirQualityData(
+        token: String,
+        onSuccess: (HomeData?) -> Unit,
+        onError: (String) -> Unit
+    ) {
         val call = getAirQualityData(token)
         call.enqueue(object : Callback<HomeData> {
             override fun onResponse(call: Call<HomeData>, response: Response<HomeData>) {
@@ -82,10 +91,17 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         })
     }
 
-    fun fetchSettings(token: String, onSuccess: (SettingsRequest?) -> Unit, onError: (String) -> Unit) {
+    fun fetchSettings(
+        token: String,
+        onSuccess: (SettingsRequest?) -> Unit,
+        onError: (String) -> Unit
+    ) {
         val call = getUserSettings(token)
         call.enqueue(object : Callback<SettingsRequest> {
-            override fun onResponse(call: Call<SettingsRequest>, response: Response<SettingsRequest>) {
+            override fun onResponse(
+                call: Call<SettingsRequest>,
+                response: Response<SettingsRequest>
+            ) {
                 if (response.isSuccessful) {
                     response.body()?.let { data ->
                         onSuccess(data)
@@ -101,7 +117,11 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         })
     }
 
-    fun fetchUserNotifications(token: String, onSuccess: (Notification?) -> Unit, onError: (String) -> Unit) {
+    fun fetchUserNotifications(
+        token: String,
+        onSuccess: (Notification?) -> Unit,
+        onError: (String) -> Unit
+    ) {
         val call = getUserNotifications(token)
         call.enqueue(object : Callback<Notification> {
             override fun onResponse(call: Call<Notification>, response: Response<Notification>) {
@@ -120,10 +140,63 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         })
     }
 
-    fun fetchLocation(token: String, onSuccess: (LocationData?) -> Unit, onError: (String) -> Unit) {
-        val call = getLocationData()
-        call.enqueue(object : Callback<LocationData> {
-            override fun onResponse(call: Call<LocationData>, response: Response<LocationData>) {
+    fun fetchLocationData(
+        token: String,
+        onSuccess: (List<LocationData>?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val call = getLocations(token)
+        call.enqueue(object : Callback<List<LocationData>> {
+            override fun onResponse(call: Call<List<LocationData>>, response: Response<List<LocationData>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    Log.d("Repository", "onResponse: $response")
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<List<LocationData>>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun updateUserSettings(
+        token: String,
+        settings: SettingsRequest,
+        onSuccess: (SettingsResponse?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val call = apiService.updateUserSettings(token, settings)
+        call.enqueue(object : Callback<SettingsResponse> {
+            override fun onResponse(
+                call: Call<SettingsResponse>,
+                response: Response<SettingsResponse>
+            ) {
+                if (response.isSuccessful) {
+                    onSuccess(response.body())
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<SettingsResponse>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun fetchAsthmaProfile(token: String, onSuccess: (ProfileRequest?) -> Unit, onError: (String) -> Unit)
+    {
+        val call = getAsthmaProfile(token)
+        call.enqueue(object : Callback<ProfileRequest> {
+            override fun onResponse(
+                call: Call<ProfileRequest>,
+                response: Response<ProfileRequest>
+            ) {
                 if (response.isSuccessful) {
                     response.body()?.let { data ->
                         onSuccess(data)
@@ -133,16 +206,24 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
                 }
             }
 
-            override fun onFailure(call: Call<LocationData>, t: Throwable) {
+            override fun onFailure(call: Call<ProfileRequest>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })
     }
 
-    fun updateUserSettings(token: String, settings: SettingsRequest, onSuccess: (SettingsResponse?) -> Unit, onError: (String) -> Unit) {
-        val call = apiService.updateUserSettings(token, settings)
+    fun updateAsthmaProfile(
+        token: String,
+        settings: ProfileRequest,
+        onSuccess: (SettingsResponse?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val call = apiService.updateAsthmaProfile(token, settings)
         call.enqueue(object : Callback<SettingsResponse> {
-            override fun onResponse(call: Call<SettingsResponse>, response: Response<SettingsResponse>) {
+            override fun onResponse(
+                call: Call<SettingsResponse>,
+                response: Response<SettingsResponse>
+            ) {
                 if (response.isSuccessful) {
                     onSuccess(response.body())
                 } else {
