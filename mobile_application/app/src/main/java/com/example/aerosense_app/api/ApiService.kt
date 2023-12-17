@@ -1,5 +1,6 @@
 package com.example.aerosense_app.api
 
+import com.example.aerosense_app.HistoryData
 import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
@@ -45,6 +46,9 @@ interface ApiService {
 
     @GET("/api/notifications")
     fun getUserNotifications(@Header("X-Access-Token") token: String): Call<Notification>
+
+    @GET("/api/history")
+    fun getHistory(@Header("X-Access-Token") token: String): Call<HistoryData>
 
 //    @GET("/api/location")
 //    fun getLocation(@Header("X-Access-Token") token: String): Call<LocationData>

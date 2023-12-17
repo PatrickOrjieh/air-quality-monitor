@@ -1,6 +1,7 @@
 package com.example.aerosense_app.api
 
 import android.util.Log
+import com.example.aerosense_app.HistoryData
 import com.example.aerosense_app.HomeData
 import com.example.aerosense_app.LocationData
 import com.example.aerosense_app.LoginRequest
@@ -40,6 +41,10 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 
     fun getAsthmaProfile(token: String): Call<ProfileRequest> {
         return apiService.getAsthmaProfile(token)
+    }
+
+    fun getHistory(token: String): Call<HistoryData> {
+        return apiService.getHistory(token)
     }
 
 //    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
@@ -159,6 +164,29 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
             }
 
             override fun onFailure(call: Call<List<LocationData>>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun fetchUserHistory(
+        token: String,
+        onSuccess: (HistoryData?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val call = getHistory(token)
+        call.enqueue(object : Callback<HistoryData> {
+            override fun onResponse(call: Call<HistoryData>, response: Response<HistoryData>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<HistoryData>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })
