@@ -45,6 +45,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
     var voc by remember { mutableDoubleStateOf(0.0) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
     val decimalFormat = DecimalFormat("#.##")
+    var weekPercentages by remember { mutableStateOf(listOf(50.0, 80.0, 30.0, 60.0, 90.0, 20.0, 70.0))}
 
     NavBar(navController)
 
@@ -61,6 +62,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
                     airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
                     pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
                     voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                    weekPercentages = historyRequest.weekly_scores.map { it.airQualityScore }
                 }
 
                 Log.d("history data", "Settings data: $historyRequest")
@@ -94,7 +96,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
         modifier = Modifier.padding(top = 170.dp)
     )
 
-    DrawGraph()
+    DrawGraph(weekPercentages)
 
     if(pmTwo >=0 && pmTwo <= 10){
         //Make the color green
@@ -232,14 +234,13 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
 
 //Parts of graph code adapted from: https://stackoverflow.com/questions/58589507/draw-simple-xy-graph-plot-with-kotlin-without-3rd-party-library
 @Composable
-fun DrawGraph() {
+fun DrawGraph(percentages: List<Double>) {
+
+    Log.d("Percentages", "Percentages: $percentages")
+
     var yaxisDifference by remember { mutableIntStateOf(48) }
 
-    // Sample data for Monday to Sunday
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-
-    // Sample data for percentages
-    val percentages by remember {mutableStateOf(listOf(50f, 80f, 30f, 60f, 90f, 20f, 70f))}
 
     // Scaling factor for a larger graph
     val scaleFactor = 2.5f
@@ -298,6 +299,7 @@ fun DrawGraph() {
 
         // Draw axis labels and align with data points
         daysOfWeek.forEachIndexed { index, day ->
+            Log.d("Percentages", "Index: ${percentages[index]}")
             val xCoord = index * scaleX * scaleFactor
             val yCoord = canvasHeight - percentages[index] * scaleY
 
@@ -329,7 +331,7 @@ fun DrawGraph() {
         daysOfWeek.forEachIndexed { index, _ ->
             val xCoord = index * scaleX * scaleFactor
             val yCoord = canvasHeight - percentages[index] * scaleY
-            val point = Offset(xCoord, yCoord)
+            val point = Offset(xCoord, yCoord.toFloat())
 
             if (index == 0) {
                 path.moveTo(point.x, point.y)
