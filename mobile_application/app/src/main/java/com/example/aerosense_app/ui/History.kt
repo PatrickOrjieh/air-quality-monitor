@@ -212,7 +212,7 @@ fun DrawGraph() {
     var yaxisDifference by remember { mutableIntStateOf(48) }
 
     // Sample data for Monday to Sunday
-    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
     // Sample data for percentages
     val percentages = listOf(50f, 80f, 30f, 60f, 90f, 20f, 70f)
