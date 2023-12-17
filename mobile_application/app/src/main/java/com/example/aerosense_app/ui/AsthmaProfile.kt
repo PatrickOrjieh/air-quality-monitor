@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -23,10 +29,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.aerosense_app.FirebaseViewModel
+import com.example.aerosense_app.ProfileRequest
 import com.example.aerosense_app.R
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
-import com.example.aerosense_app.ui.components.SelectionDropDown
 
 @Composable
 fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewModel, repository: Repository){
@@ -47,10 +53,10 @@ fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewM
         repository.fetchAsthmaProfile(token,
             onSuccess = { profileRequest ->
                 if (profileRequest != null) {
-                    mainTrigger = profileRequest.mainTrigger
+                    mainTrigger = profileRequest.personalTrigger
                 }
                 if (profileRequest != null) {
-                    asthmaSeverity = profileRequest.asthmaSeverity
+                    asthmaSeverity = profileRequest.asthmaCondition
                 }
 
                 Log.d("Check asthma profile data", "Settings data: $profileRequest")
@@ -112,7 +118,7 @@ fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewM
     {
         Log.d("Check main trigger", "Main trigger: $mainTrigger")
         if(mainTrigger != ""){
-            SelectionDropDown(selection = selectionTrigger, mainTrigger)
+            profileSelectionDropDown(selection = selectionTrigger, mainTrigger, asthmaSeverity, true, repository = repository, token = token, onItemSelected = { mainTrigger = it })
         }
     }
 
@@ -132,9 +138,83 @@ fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewM
     {
         Log.d("Check asthma severity", "Asthma severity: $asthmaSeverity")
         if(asthmaSeverity != "") {
-            SelectionDropDown(selection = selectionSeverity, asthmaSeverity)
+            profileSelectionDropDown(selection = selectionSeverity, mainTrigger, asthmaSeverity, false, repository = repository, token = token, onItemSelected = { asthmaSeverity = it })
         }
     }
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun profileSelectionDropDown(selection: Array<String>, trigger: String, severity: String, isTrigger: Boolean, repository: Repository, token: String?, onItemSelected: (String) -> Unit) {
+    //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf("") }
+    var refresh by remember { mutableStateOf(1) }
+    if(isTrigger){
+        selectedText = trigger
+    }
+    else{
+        selectedText = severity
+    }
+
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+            TextField(
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                selection.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(text = item) },
+                        onClick = {
+
+                            val requestBody = ProfileRequest("","")
+                            if(isTrigger){
+                                requestBody.personalTrigger = item
+                                requestBody.asthmaCondition = severity
+                            }
+                            else{
+                                requestBody.asthmaCondition = item
+                                requestBody.personalTrigger = trigger
+                            }
+
+                            if (token != null) {
+                                repository.updateAsthmaProfile(token, requestBody,
+                                    onSuccess = { settingsResponse ->
+                                        Log.d("Settings", "Success: $settingsResponse")
+                                    },
+                                    onError = { errorMessage ->
+                                        Log.d("Settings", "Error: $errorMessage")
+                                    }
+                                )
+                            }
+
+                            onItemSelected(item)
+
+                            selectedText = item
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

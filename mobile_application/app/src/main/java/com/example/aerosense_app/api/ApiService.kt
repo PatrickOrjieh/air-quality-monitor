@@ -37,10 +37,10 @@ interface ApiService {
     @POST("/api/settings")
     fun updateUserSettings(@Header("X-Access-Token") token: String, @Body settings: SettingsRequest): Call<SettingsResponse>
 
-    @GET("/api/asthma_profile")
+    @GET("/api/asthma-profile")
     fun getAsthmaProfile(@Header("X-Access-Token") token: String): Call<ProfileRequest>
 
-    @POST("/api/asthma_profile")
+    @POST("/api/asthma-profile")
     fun updateAsthmaProfile(@Header("X-Access-Token") token: String, @Body settings: ProfileRequest): Call<SettingsResponse>
 
     @GET("/api/notifications")

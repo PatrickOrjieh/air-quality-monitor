@@ -310,7 +310,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
                     onClick = {
                               sound = true
 
-                        val requestBody = SettingsRequest("it changed", vibration, sound)
+                        val requestBody = SettingsRequest(notificationFrequency, vibration, sound)
 
                         if (token != null) {
                             repository.updateUserSettings(token, requestBody,
