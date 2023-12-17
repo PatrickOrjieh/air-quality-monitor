@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,8 +14,6 @@ import com.example.aerosense_app.network.RetrofitClient
 import com.example.aerosense_app.ui.theme.AeroSense_AppTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 
 //Parts of code taken from: https://github.com/mitchtabian/Google-Maps-Compose
 class MainActivity : ComponentActivity() {
@@ -80,21 +77,6 @@ class MainActivity : ComponentActivity() {
         askPermissions()
         askNotificationPermission()
         super.onCreate(savedInstanceState)
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-
-            // Log and toast
-            val msg = getString(R.string.msg_token_fmt, token)
-            Log.d(TAG, msg)
-            //Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-        })
 
         setContent {
             AeroSense_AppTheme {

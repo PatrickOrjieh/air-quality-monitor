@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,10 +8,15 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,32 +29,94 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
+import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
+import java.text.DecimalFormat
 
 //Github Copilot used while writing this code
 
 @Composable
-fun History(navController: NavHostController){
-    var airPercent by remember { mutableFloatStateOf(0f) }
-    var pmTwo by remember { mutableIntStateOf(0) }
+fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, repository: Repository){
+    var airPercent by remember { mutableDoubleStateOf(0.0) }
+    var pmTwo by remember { mutableDoubleStateOf(0.0) }
     var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var highVOC by remember { mutableIntStateOf(0) }
-    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var voc by remember { mutableFloatStateOf(0.0F) }
+    var voc by remember { mutableDoubleStateOf(0.0) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-
-    //hardcoded values for now
-    airPercent = 80f
-    pmTwo = 100
-    highVOC = 50
+    val decimalFormat = DecimalFormat("#.##")
+    var weekPercentages by remember { mutableStateOf(listOf(50.0, 80.0, 30.0, 60.0, 90.0, 20.0, 70.0))}
+    val options = arrayOf("This Week", "Last Week")
+    var selected  by remember { mutableStateOf("This Week")}
 
     NavBar(navController)
+
+    // Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top= 120.dp)
+            .requiredWidth(170.dp)
+    ) {
+        HistorySelectionDropDown(
+            selection = options,
+            selected = selected,
+            token = token,
+            repository = repository,
+            onItemSelected = { selected = it }
+        )
+    }
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        if(selected == "This Week") {
+            repository.fetchUserHistory(token,
+                onSuccess = { historyRequest ->
+                    if (historyRequest != null) {
+                        airPercent =
+                            decimalFormat.format(historyRequest.overall_avg_score).toDouble()
+                        pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
+                        voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                        weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
+                    }
+
+                    Log.d("history data", "Settings data: $historyRequest")
+                },
+                onError = { errorMessage ->
+                    Log.d("Check Settings Data", "Error: $errorMessage")
+                }
+            )
+        }
+        else{
+            repository.fetchLastWeekHistory(token,
+                onSuccess = { historyRequest ->
+                    if (historyRequest != null) {
+                        airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
+                        pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
+                        voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                        weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
+                    }
+
+                    Log.d("history data", "Settings data: $historyRequest")
+                },
+                onError = { errorMessage ->
+                    Log.d("Check Settings Data", "Error: $errorMessage")
+                }
+            )
+        }
+    } else {
+        Log.d("SettingsError", "Error: Firebase token is null or blank")
+    }
 
     Text(
         text = "History",
@@ -57,7 +125,7 @@ fun History(navController: NavHostController){
         style = TextStyle(
             fontSize = 35.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 90.dp)
+        modifier = Modifier.padding(top = 70.dp)
     )
 
     Text(
@@ -67,10 +135,10 @@ fun History(navController: NavHostController){
         style = TextStyle(
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium),
-        modifier = Modifier.padding(top = 170.dp)
+        modifier = Modifier.padding(top = 190.dp)
     )
 
-    DrawGraph()
+    DrawGraph(weekPercentages)
 
     if(pmTwo >=0 && pmTwo <= 10){
         //Make the color green
@@ -115,12 +183,13 @@ fun History(navController: NavHostController){
     ){
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 20.dp)
     ) {
         Text(
             text = "Cleanliness",
-            color = getAirQualityColor(airPercent),
+            color = getAirQualityColor(airPercent.toFloat()),
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -133,12 +202,13 @@ fun History(navController: NavHostController){
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp, start= 30.dp)
+            modifier = Modifier.padding(top = 30.dp, start= 25.dp)
         )
     }
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 175.dp)
     ) {
         Text(
@@ -156,8 +226,9 @@ fun History(navController: NavHostController){
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp)
-                .offset(x = -35.dp)
+            modifier = Modifier
+                .padding(top = 30.dp)
+                .offset(x = -45.dp)
         )
 
 //        Text(
@@ -171,7 +242,8 @@ fun History(navController: NavHostController){
     }
 
     Box(
-        modifier = Modifier.padding(top = 560.dp)
+        modifier = Modifier
+            .padding(top = 560.dp)
             .padding(start = 280.dp)
     ) {
         Text(
@@ -184,12 +256,13 @@ fun History(navController: NavHostController){
         )
 
         Text(
-            text = "$highVOC ppb",
+            text = "$voc ppb",
             color = Color(0xff1e1e1e),
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp, start = 10.dp)
+            modifier = Modifier
+                .padding(top = 30.dp)
                 .offset(x = -20.dp)
         )
     }
@@ -208,14 +281,13 @@ fun History(navController: NavHostController){
 
 //Parts of graph code adapted from: https://stackoverflow.com/questions/58589507/draw-simple-xy-graph-plot-with-kotlin-without-3rd-party-library
 @Composable
-fun DrawGraph() {
+fun DrawGraph(percentages: List<Double>) {
+
+    Log.d("Percentages", "Percentages: $percentages")
+
     var yaxisDifference by remember { mutableIntStateOf(48) }
 
-    // Sample data for Monday to Sunday
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-
-    // Sample data for percentages
-    val percentages = listOf(50f, 80f, 30f, 60f, 90f, 20f, 70f)
 
     // Scaling factor for a larger graph
     val scaleFactor = 2.5f
@@ -223,7 +295,7 @@ fun DrawGraph() {
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start= 5.dp)
+            .padding(start = 5.dp)
             .requiredHeight(230.dp)
             .requiredWidth(280.dp)
     ) {
@@ -275,7 +347,6 @@ fun DrawGraph() {
         // Draw axis labels and align with data points
         daysOfWeek.forEachIndexed { index, day ->
             val xCoord = index * scaleX * scaleFactor
-            val yCoord = canvasHeight - percentages[index] * scaleY
 
             // Draw X-axis label
             drawContext.canvas.nativeCanvas.drawText(
@@ -304,8 +375,16 @@ fun DrawGraph() {
         val path = Path()
         daysOfWeek.forEachIndexed { index, _ ->
             val xCoord = index * scaleX * scaleFactor
-            val yCoord = canvasHeight - percentages[index] * scaleY
-            val point = Offset(xCoord, yCoord)
+            var yCoord = 0.0
+
+            if (index < percentages.size) {
+                yCoord = canvasHeight - percentages[index] * scaleY
+            } else {
+                // Index is out of bounds, set yCoord to a default value
+                yCoord = canvasHeight - 0.0 * scaleY
+            }
+
+            val point = Offset(xCoord, yCoord.toFloat())
 
             if (index == 0) {
                 path.moveTo(point.x, point.y)
@@ -318,3 +397,49 @@ fun DrawGraph() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HistorySelectionDropDown(selection: Array<String>, selected: String, token: String?, repository: Repository, onItemSelected: (String) -> Unit) {
+    //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(selected) }
+
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+            TextField(
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                selection.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(text = item) },
+                        onClick = {
+
+                            onItemSelected(item)
+
+                            selectedText = item
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
