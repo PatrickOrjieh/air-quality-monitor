@@ -4,7 +4,7 @@ from app.models import User, AsthmaProfile
 import firebase_admin
 from firebase_admin import auth
 
-@app.route('/api/asthma_profile', methods=['GET'])
+@app.route('/api/asthma-profile', methods=['GET'])
 def get_asthma_profile():
     token = request.headers.get('X-Access-Token')
     if not token:
@@ -32,7 +32,7 @@ def get_asthma_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/asthma_profile', methods=['POST'])
+@app.route('/api/asthma-profile', methods=['POST'])
 def update_asthma_profile():
     token = request.headers.get('X-Access-Token')
     if not token:
