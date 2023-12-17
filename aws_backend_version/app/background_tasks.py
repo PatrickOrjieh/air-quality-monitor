@@ -8,6 +8,7 @@ import os
 import mysql.connector
 from dotenv import load_dotenv
 import json
+import requests
 
 load_dotenv()
 
@@ -17,6 +18,21 @@ HUMIDITY_THRESHOLD = {"Good": 30, "Moderate": 50, "Bad": 70}
 GAS_RESISTANCE_THRESHOLD = {"Good": 4000, "Moderate": 6000, "Bad": 10000}
 PM_2_5_THRESHOLD = {"Good": 12, "Moderate": 35.4, "Bad": 55.4}
 PM_10_THRESHOLD = {"Good": 54, "Moderate": 154, "Bad": 254}
+
+def send_fcm_notification(token, title, body):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + os.getenv('FCM_SERVER_KEY')
+    }
+    payload = {
+        'notification': {
+            'title': title,
+            'body': body
+        },
+        'to': token
+    }
+    response = requests.post('https://fcm.googleapis.com/fcm/send', headers=headers, json=payload)
+    return response.json()
 
 def calculate_air_quality_score(data):
     #calculate air quality score
@@ -118,15 +134,47 @@ def store_data(data):
                     cursor.execute(query, values)
                     connection.commit()
                     print("Notification generated")
+                    # Send FCM notification
+                    cursor.execute('SELECT fcmToken FROM User WHERE userID = %s', (userID,))
+                    user_result = cursor.fetchone()
+                    if user_result:
+                        fcm_token = user_result[0]
+                        # Send FCM notification
+                        send_fcm_notification(fcm_token, heading, message)
+                        print("FCM Notification sent")
                 else:
                     print("No notification generated")
             else:
                 print("User not found")
-
         else:
             print("Hub not found")
+        # Insert location data if present
+        if 'latitude' in data and 'longitude' in data:
+            insert_location_data(hubID, data['latitude'], data['longitude'])
+            
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+    finally:
+        cursor.close()
+        connection.close()
+
+def insert_location_data(hubID, latitude, longitude):
+    try:
+        connection = mysql.connector.connect(
+            host=os.getenv('MYSQL_HOST'),
+            user=os.getenv('MYSQL_USER'),
+            password=os.getenv('MYSQL_PASSWORD'),
+            database=os.getenv('MYSQL_DB_NAME')
+        )
+        cursor = connection.cursor()
+        query = """
+            INSERT INTO Location (hubID, latitude, longitude)
+            VALUES (%s, %s, %s)
+        """
+        cursor.execute(query, (hubID, latitude, longitude))
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error inserting location data: {err}")
     finally:
         cursor.close()
         connection.close()
