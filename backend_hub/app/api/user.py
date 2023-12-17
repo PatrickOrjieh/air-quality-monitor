@@ -17,8 +17,9 @@ def register_user():
     data = request.get_json()
     token = data.get('firebaseToken')
     model_number = data.get('modelNumber')
+    fcm_token = data.get('fcmToken')
 
-    if not token or not model_number:
+    if not token or not model_number or not fcm_token:
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
@@ -26,7 +27,7 @@ def register_user():
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
         email = decoded_token['email']
-        name = decoded_token.get('name', email)  # Use email as name if name not provided
+        name = decoded_token.get('name', email)
 
         # Check if user already exists
         cursor = mysql.connection.cursor()
@@ -35,7 +36,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Insert new user into MySQL database
-        cursor.execute('INSERT INTO User (name, email, firebaseUID) VALUES (%s, %s, %s)', (name, email, uid))
+        cursor.execute('INSERT INTO User (name, email, firebaseUID, fcmToken) VALUES (%s, %s, %s, %s)', (name, email, uid, fcm_token))
         mysql.connection.commit()
         user_id = cursor.lastrowid
 

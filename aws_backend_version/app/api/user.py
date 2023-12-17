@@ -19,6 +19,7 @@ def register_user():
     data = request.get_json()
     token = data.get('firebaseToken')
     model_number = data.get('modelNumber')
+    fcm_token = data.get('fcmToken')
 
     if not token or not model_number:
         return jsonify({"error": "Missing required fields"}), 400
@@ -36,7 +37,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Create new user
-        new_user = User(name=name, email=email, firebaseUID=uid)
+        new_user = User(name=name, email=email, firebaseUID=uid, fcmToken=fcm_token)
         db.session.add(new_user)
         db.session.commit()
 
