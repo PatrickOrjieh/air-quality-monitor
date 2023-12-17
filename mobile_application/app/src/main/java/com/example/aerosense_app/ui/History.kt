@@ -8,7 +8,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -24,6 +29,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.aerosense_app.FirebaseViewModel
+import com.example.aerosense_app.SettingsRequest
 import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
 import java.text.DecimalFormat
@@ -62,7 +69,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
                     airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
                     pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
                     voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
-                    weekPercentages = historyRequest.weekly_scores.map { it.airQualityScore }
+                    weekPercentages = historyRequest.weekly_scores.map { it.air_quality_score }
                 }
 
                 Log.d("history data", "Settings data: $historyRequest")
@@ -159,7 +166,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp, start= 30.dp)
+            modifier = Modifier.padding(top = 30.dp, start= 25.dp)
         )
     }
 
@@ -183,7 +190,7 @@ fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, 
                 fontSize = 20.sp,
             ),
             modifier = Modifier.padding(top = 30.dp)
-                .offset(x = -50.dp)
+                .offset(x = -45.dp)
         )
 
 //        Text(
@@ -240,7 +247,7 @@ fun DrawGraph(percentages: List<Double>) {
 
     var yaxisDifference by remember { mutableIntStateOf(48) }
 
-    val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
     // Scaling factor for a larger graph
     val scaleFactor = 2.5f
@@ -344,3 +351,64 @@ fun DrawGraph(percentages: List<Double>) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectionDropDown(selection: Array<String>, selected: String, sound: Boolean, token: String?, repository: Repository, onItemSelected: (String) -> Unit) {
+    //Code for this taken from: https://alexzh.com/jetpack-compose-dropdownmenu/
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(selected) }
+
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+            TextField(
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                selection.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(text = item) },
+                        onClick = {
+
+                            val requestBody = SettingsRequest("", false,sound)
+
+                            requestBody.notificationFrequency = item
+
+                            if (token != null) {
+                                repository.updateUserSettings(token, requestBody,
+                                    onSuccess = { settingsResponse ->
+                                        Log.d("Settings", "Success: $settingsResponse")
+                                    },
+                                    onError = { errorMessage ->
+                                        Log.d("Settings", "Error: $errorMessage")
+                                    }
+                                )
+                            }
+
+                            onItemSelected(item)
+
+                            selectedText = item
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

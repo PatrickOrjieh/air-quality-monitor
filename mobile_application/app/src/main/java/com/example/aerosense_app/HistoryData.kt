@@ -10,6 +10,6 @@ data class HistoryData (
 )
 
 data class WeeklyScore(
-    val airQualityScore: Double,
+    val air_quality_score: Double,
     val day: String
 )

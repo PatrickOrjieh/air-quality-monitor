@@ -47,6 +47,10 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         return apiService.getHistory(token)
     }
 
+    fun getLastWeekHistory(token: String): Call<HistoryData> {
+        return apiService.getLastWeekHistory(token)
+    }
+
 //    fun updateUserSettings(requestBody: SettingsRequest): Call<SettingsResponse> {
 //        return apiService.updateUserSettings(requestBody)
 //    }
@@ -175,6 +179,29 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         onError: (String) -> Unit
     ) {
         val call = getHistory(token)
+        call.enqueue(object : Callback<HistoryData> {
+            override fun onResponse(call: Call<HistoryData>, response: Response<HistoryData>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { data ->
+                        onSuccess(data)
+                    }
+                } else {
+                    onError("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<HistoryData>, t: Throwable) {
+                onError("Failure: ${t.message}")
+            }
+        })
+    }
+
+    fun fetchLastWeekHistory(
+        token: String,
+        onSuccess: (HistoryData?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val call = getLastWeekHistory(token)
         call.enqueue(object : Callback<HistoryData> {
             override fun onResponse(call: Call<HistoryData>, response: Response<HistoryData>) {
                 if (response.isSuccessful) {

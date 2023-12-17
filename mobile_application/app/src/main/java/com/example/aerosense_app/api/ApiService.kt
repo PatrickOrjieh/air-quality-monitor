@@ -50,6 +50,9 @@ interface ApiService {
     @GET("/api/history")
     fun getHistory(@Header("X-Access-Token") token: String): Call<HistoryData>
 
+    @GET("/api/history?week=last")
+    fun getLastWeekHistory(@Header("X-Access-Token") token: String): Call<HistoryData>
+
 //    @GET("/api/location")
 //    fun getLocation(@Header("X-Access-Token") token: String): Call<LocationData>
 
