@@ -1,5 +1,6 @@
 package com.example.aerosense_app.ui
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +11,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,26 +30,49 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.aerosense_app.FirebaseViewModel
+import com.example.aerosense_app.api.Repository
 import com.example.aerosense_app.ui.components.NavBar
+import java.text.DecimalFormat
 
 //Github Copilot used while writing this code
 
 @Composable
-fun History(navController: NavHostController){
-    var airPercent by remember { mutableFloatStateOf(0f) }
-    var pmTwo by remember { mutableIntStateOf(0) }
+fun History(navController: NavHostController, firebaseModel: FirebaseViewModel, repository: Repository){
+    var airPercent by remember { mutableDoubleStateOf(0.0) }
+    var pmTwo by remember { mutableDoubleStateOf(0.0) }
     var pmTwoColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var highVOC by remember { mutableIntStateOf(0) }
-    var percentageColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-    var voc by remember { mutableFloatStateOf(0.0F) }
+    var voc by remember { mutableDoubleStateOf(0.0) }
     var vocColor by remember { mutableStateOf(Color(0xff1e1e1e)) }
-
-    //hardcoded values for now
-    airPercent = 80f
-    pmTwo = 100
-    highVOC = 50
+    val decimalFormat = DecimalFormat("#.##")
 
     NavBar(navController)
+
+    // Obtain the token from the ViewModel
+    val token = firebaseModel.firebaseToken
+    Log.d("Token", "Token: $token")
+
+// Check if the token is not null
+    if (!token.isNullOrBlank()) {
+        // Use the token to make the API call
+        repository.fetchUserHistory(token,
+            onSuccess = { historyRequest ->
+                if (historyRequest != null) {
+                    airPercent = decimalFormat.format(historyRequest.overall_avg_score).toDouble()
+                    pmTwo = decimalFormat.format(historyRequest.overall_avg_pm2_5).toDouble()
+                    voc = decimalFormat.format(historyRequest.overall_avg_voc).toDouble()
+                }
+
+                Log.d("history data", "Settings data: $historyRequest")
+            },
+            onError = { errorMessage ->
+                Log.d("Check Settings Data", "Error: $errorMessage")
+            }
+        )
+    } else {
+        Log.d("SettingsError", "Error: Firebase token is null or blank")
+    }
+
 
     Text(
         text = "History",
@@ -120,7 +144,7 @@ fun History(navController: NavHostController){
     ) {
         Text(
             text = "Cleanliness",
-            color = getAirQualityColor(airPercent),
+            color = getAirQualityColor(airPercent.toFloat()),
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -157,7 +181,7 @@ fun History(navController: NavHostController){
                 fontSize = 20.sp,
             ),
             modifier = Modifier.padding(top = 30.dp)
-                .offset(x = -35.dp)
+                .offset(x = -50.dp)
         )
 
 //        Text(
@@ -184,12 +208,12 @@ fun History(navController: NavHostController){
         )
 
         Text(
-            text = "$highVOC ppb",
+            text = "$voc ppb",
             color = Color(0xff1e1e1e),
             style = TextStyle(
                 fontSize = 20.sp,
             ),
-            modifier = Modifier.padding(top = 30.dp, start = 10.dp)
+            modifier = Modifier.padding(top = 30.dp)
                 .offset(x = -20.dp)
         )
     }
@@ -215,7 +239,7 @@ fun DrawGraph() {
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
     // Sample data for percentages
-    val percentages = listOf(50f, 80f, 30f, 60f, 90f, 20f, 70f)
+    val percentages by remember {mutableStateOf(listOf(50f, 80f, 30f, 60f, 90f, 20f, 70f))}
 
     // Scaling factor for a larger graph
     val scaleFactor = 2.5f

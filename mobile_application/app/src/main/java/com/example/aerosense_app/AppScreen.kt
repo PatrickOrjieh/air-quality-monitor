@@ -76,7 +76,7 @@ enum class Screen {
             ) }
                     composable("AsthmaProfile"){ AsthmaProfile(navController, firebaseModel, repository) }
                     composable("ResetPassword") { ResetPassword(navController) }
-                    composable("History") { History(navController) }
+                    composable("History") { History(navController, firebaseModel, repository) }
                     composable("Notifications") { Notifications(navController, repository, firebaseModel) }
             }
 
