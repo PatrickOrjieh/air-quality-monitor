@@ -32,7 +32,16 @@ def send_fcm_notification(token, title, body):
         'to': token
     }
     response = requests.post('https://fcm.googleapis.com/fcm/send', headers=headers, json=payload)
-    return response.json()
+    
+    # Check if the response is JSON before decoding
+    if response.headers.get('Content-Type') == 'application/json':
+        return response.json()
+    else:
+        # Log and return error for non-JSON response
+        print("Non-JSON Response Received:", response.status_code, response.text)
+        return {"error": "Non-JSON response received", "status_code": response.status_code, "content": response.text}
+
+
 
 def calculate_air_quality_score(data):
     #calculate air quality score
@@ -70,12 +79,18 @@ class MySubscribeCallback(SubscribeCallback):
     def message(self, pubnub, message):
         # Decrypt and process message here
         decrypted_message = message.message
-        # print(f"Received message: {decrypted_message}")
+        print(f"Received message: {decrypted_message}")
         store_data(decrypted_message)
 
     def status(self, pubnub, status):
         if status.category == PNStatusCategory.PNConnectedCategory:
             print("Connected to PubNub")
+    
+    def status(self, pubnub, status):
+        if status.is_error():
+            print("Error Status:", status)
+        else:
+            print("Status:", status)
 
 def store_data(data):
     # Connect to the database
@@ -190,7 +205,7 @@ def determine_air_quality_category(percentage):
         return "Very Poor"
     
 def generate_notification(data, category):
-    if category in ["Bad", "Very Poor"]:
+    if category in ["Moderate", "Bad", "Very Poor"]:
         # Check which parameter is causing poor air quality
         if data['temperature'] > TEMP_THRESHOLD["Bad"]:
             heading = f"{category} Air Temperature"
@@ -230,7 +245,7 @@ def start_pubnub_listener(app):
             print(f"Error in PubNub listener: {e}")
 
 def start_background_task(app):
-    # print("Starting background task")
+    print("Starting background task")
     thread = Thread(target=start_pubnub_listener, args=(app,))
     thread.daemon = True
     thread.start()

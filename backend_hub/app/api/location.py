@@ -5,7 +5,7 @@ from firebase_admin import auth
 from datetime import datetime
 
 @app.route('/api/locations', methods=['GET'])
-def get_hub_locations():
+def get_all_hub_locations():
     # Retrieve the Firebase token from the request headers
     token = request.headers.get('X-Access-Token')
     if not token:
@@ -13,33 +13,14 @@ def get_hub_locations():
 
     try:
         # Verify the Firebase ID token and get the user's information
-        decoded_token = auth.verify_id_token(token)
-        firebase_user_id = decoded_token['uid']
+        auth.verify_id_token(token)
 
-        # Use the Firebase UID to find the associated user ID in the database
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT userID FROM User WHERE firebaseUID = %s', (firebase_user_id,))
-        user_result = cursor.fetchone()
-
-        if not user_result:
-            return jsonify({'error': 'User not found in the database'}), 404
-
-        user_id = user_result[0]
-
-        # Fetch the hub ID associated with the user ID
-        cursor.execute('SELECT hubID FROM Hub WHERE userID = %s', (user_id,))
-        hub_result = cursor.fetchone()
-
-        if not hub_result:
-            return jsonify({'error': 'No hub associated with this user in the database'}), 404
-
-        hub_id = hub_result[0]
-
-        # Fetch the location data for the user's hub for the current day
+        # Fetch the location data for all hubs for the current day
         today_date = datetime.now().strftime('%Y-%m-%d')
+        cursor = mysql.connection.cursor()
         cursor.execute('''SELECT latitude, longitude FROM Location 
-                          WHERE hubID = %s AND DATE(createdAt) = %s''', 
-                          (hub_id, today_date))
+                          WHERE DATE(createdAt) = %s''', 
+                          (today_date,))
         locations = cursor.fetchall()
         cursor.close()
 
