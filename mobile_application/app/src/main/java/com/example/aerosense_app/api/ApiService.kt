@@ -22,7 +22,7 @@ interface ApiService {
     @GET("/api/home")
     fun getAirQualityData(@Header("X-Access-Token") token: String): Call<HomeData>
 
-    @GET("/api/location")
+    @GET("/api/locations")
     fun getLocationData(@Header("X-Access-Token") token: String): Call<List<LocationData>>
 
     @POST("/api/register")

@@ -31,6 +31,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.ktx.addMarker
 import kotlinx.coroutines.launch
 
 //Parts of code taken from: https://github.com/mitchtabian/Google-Maps-Compose
@@ -60,7 +61,8 @@ fun Location(
             onSuccess = { locationData ->
                 if (locationData != null) {
                     // Assuming LocationData has 'latitude' and 'longitude' properties
-                    var lat = locationData
+                    locationList.clear()
+                    locationList.addAll(locationData.map { LatLng(it.latitude, it.longitude) })
 
                     Log.d("Check location data", "Location data: ${locationData[0].latitude}")
                 }
@@ -94,11 +96,21 @@ fun Location(
             MapEffect(state.clusterItems) { map ->
                 if (state.clusterItems.isNotEmpty()) {
                     val clusterManager = setupClusterManager(context, map)
-                    map.setOnCameraIdleListener(clusterManager)
-                    map.setOnMarkerClickListener(clusterManager)
-                    state.clusterItems.forEach { clusterItem ->
-                        map.addPolygon(clusterItem.polygonOptions)
+//                    map.setOnCameraIdleListener(clusterManager)
+//                    map.setOnMarkerClickListener(clusterManager)
+//                    state.clusterItems.forEach { clusterItem ->
+//                        map.addPolygon(clusterItem.polygonOptions)
+//                    }
+
+                    // Add markers for each location in the locationList
+                    for (location in locationList) {
+                        map.addMarker {
+                            position(location)
+                            title("Bad Air Quality")
+                            snippet("Bad air quality detected here")
+                        }
                     }
+
                     map.setOnMapLoadedCallback {
                         if (state.clusterItems.isNotEmpty()) {
                             scope.launch {
@@ -127,6 +139,7 @@ fun Location(
                 },
                 draggable = true
             )
+
         }
     }
     // Center camera to include all the Zones.
