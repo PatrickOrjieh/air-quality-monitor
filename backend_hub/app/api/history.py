@@ -71,27 +71,29 @@ def get_air_quality_history():
         today = datetime.now().date()
         start_of_week = today - timedelta(days=today.weekday() + 8) if week == 'last' else today - timedelta(days=today.weekday() + 1)
 
-        cursor.execute('''SELECT DATE(createdAt) as date, AVG(temperature) as avg_temp, AVG(humidity) as avg_humidity, 
+        cursor.execute('''SELECT DATE(timestamp) as date, AVG(temperature) as avg_temp, AVG(humidity) as avg_humidity, 
                           AVG(gas_resistance) as avg_gas, AVG(PM2_5) as avg_pm2_5, AVG(PM10) as avg_pm10
                           FROM AirQualityMeasurement
-                          WHERE hubID = %s AND DATE(createdAt) >= %s
-                          GROUP BY DATE(createdAt)''', (hub_id, start_of_week))
+                          WHERE hubID = %s AND DATE(timestamp) >= %s
+                          GROUP BY DATE(timestamp)''', (hub_id, start_of_week))
         week_data = cursor.fetchall()
 
         weekly_scores = []
         total_pm2_5 = 0
         total_voc = 0
         for row in week_data:
-            daily_data = {'date': row[0], 'temperature': row[1], 'humidity': row[2],
+            date_object = row[0]
+            day_of_week = date_object.strftime("%A")
+            daily_data = {'date': date_object, 'temperature': row[1], 'humidity': row[2],
                           'gas_resistance': row[3], 'pm2_5': row[4], 'pm10': row[5]}
             score = calculate_air_quality_score(daily_data)
-            weekly_scores.append({'date': str(row[0]), 'air_quality_score': score})
+            weekly_scores.append({'day': day_of_week, 'air_quality_score': score})  # Use 'day' instead of 'date'
             total_pm2_5 += row[4]
             total_voc += row[3]
 
         overall_avg_score = sum([day['air_quality_score'] for day in weekly_scores]) / len(weekly_scores)
         overall_avg_pm2_5 = total_pm2_5 / len(weekly_scores)
-        overall_avg_voc = total_voc / len(weekly_scores)
+        overall_avg_voc = 10000/(total_voc / len(weekly_scores))
 
         response_data = {
             'weekly_scores': weekly_scores,

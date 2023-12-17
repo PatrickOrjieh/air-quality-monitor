@@ -42,11 +42,28 @@ def score_parameter(value, thresholds, reverse=False):
             return 60
         else:
             return 40
+        
+def get_start_end_of_week(week='current'):
+    today = datetime.now().date()
+    weekday = today.weekday()
+
+    # Adjust to make Monday the first day of the week
+    start_of_week = today - timedelta(days=weekday)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # Adjust for the last week
+    if week == 'last':
+        start_of_week -= timedelta(days=7)
+        end_of_week -= timedelta(days=7)
+
+    return start_of_week, end_of_week
+
 
 @app.route('/api/history', methods=['GET'])
 def get_air_quality_history():
     token = request.headers.get('X-Access-Token')
     week = request.args.get('week', 'current')
+    start_of_week, end_of_week = get_start_end_of_week(week)
 
     if not token:
         return jsonify({'error': 'Firebase ID token is required'}), 401
@@ -63,11 +80,8 @@ def get_air_quality_history():
         if not hub:
             return jsonify({'error': 'No hub associated with this user'}), 404
 
-        today = datetime.now().date()
-        start_of_week = today - timedelta(days=today.weekday() + 8) if week == 'last' else today - timedelta(days=today.weekday() + 1)
-
         week_data = db.session.query(
-            cast(AirQualityMeasurement.createdAt, DATE).label('date'),
+            cast(AirQualityMeasurement.timestamp, DATE).label('date'),
             func.avg(AirQualityMeasurement.temperature).label('avg_temp'),
             func.avg(AirQualityMeasurement.humidity).label('avg_humidity'),
             func.avg(AirQualityMeasurement.gas_resistance).label('avg_gas'),
@@ -75,25 +89,26 @@ def get_air_quality_history():
             func.avg(AirQualityMeasurement.PM10).label('avg_pm10')
         ).filter(
             AirQualityMeasurement.hubID == hub.hubID,
-            cast(AirQualityMeasurement.createdAt, DATE) >= start_of_week
-        ).group_by(
-            'date'
-        ).all()
+            cast(AirQualityMeasurement.timestamp, DATE) >= start_of_week,
+            cast(AirQualityMeasurement.timestamp, DATE) <= end_of_week
+        ).group_by('date').all()
 
         weekly_scores = []
         total_pm2_5 = 0
         total_voc = 0
         for row in week_data:
-            daily_data = {'date': row.date, 'temperature': row.avg_temp, 'humidity': row.avg_humidity,
-                          'gas_resistance': row.avg_gas, 'pm2_5': row.avg_pm2_5, 'pm10': row.avg_pm10}
+            date_object = row.date
+            day_of_week = date_object.strftime("%A")  # Format date to day name
+            daily_data = {'date': date_object, 'temperature': row.avg_temp, 'humidity': row.avg_humidity,
+                        'gas_resistance': row.avg_gas, 'pm2_5': row.avg_pm2_5, 'pm10': row.avg_pm10}
             score = calculate_air_quality_score(daily_data)
-            weekly_scores.append({'date': str(row.date), 'air_quality_score': score})
+            weekly_scores.append({'day': day_of_week, 'air_quality_score': score})  # Use 'day' instead of 'date'
             total_pm2_5 += row.avg_pm2_5
             total_voc += row.avg_gas
 
         overall_avg_score = sum([day['air_quality_score'] for day in weekly_scores]) / len(weekly_scores)
         overall_avg_pm2_5 = total_pm2_5 / len(weekly_scores)
-        overall_avg_voc = total_voc / len(weekly_scores)
+        overall_avg_voc = 10000/(total_voc / len(weekly_scores))
 
         response_data = {
             'weekly_scores': weekly_scores,
