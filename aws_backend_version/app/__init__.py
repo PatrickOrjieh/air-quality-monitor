@@ -27,6 +27,7 @@ from app.api import pollen
 from app.api import location
 from app.api import profile
 from app.api import history
+from app.api import notification
 
 # Start background tasks if needed
 from .background_tasks import start_background_task

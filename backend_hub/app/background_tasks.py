@@ -46,6 +46,16 @@ def send_fcm_notification(token, title, body):
     except json.JSONDecodeError:
         print("Error parsing JSON response from FCM server.")
         return None
+    
+def insert_notification(cursor, userID, heading, message):
+    try:
+        insert_query = """
+            INSERT INTO Notification (userID, heading, message)
+            VALUES (%s, %s, %s)
+        """
+        cursor.execute(insert_query, (userID, heading, message))
+    except mysql.connector.Error as err:
+        print(f"Error inserting notification: {err}")
 
 # Define thresholds for all parameters
 TEMP_THRESHOLD = {"Good": 18, "Moderate": 25, "Bad": 30}
@@ -179,6 +189,11 @@ def store_data(data):
                             if heading and message:
                                 send_fcm_notification(fcm_token, heading, message)
                                 print("Notification sent to user")
+
+                                # Insert notification into the database
+                                insert_notification(cursor, userID, heading, message)
+                                connection.commit()
+                                print("Notification inserted into database")
                             else:
                                 print("No notification generated due to insufficient data.")
                         else:
