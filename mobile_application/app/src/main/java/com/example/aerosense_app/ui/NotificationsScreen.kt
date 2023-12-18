@@ -61,10 +61,12 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
         repository.fetchUserNotifications(token,
             onSuccess = { notification ->
 
+                Log.d("Notification Screen", "Success: $notification")
+
                 if (notification != null) {
 
                     for (i in 0 until notification.size) {
-                        val time = notification[i].time.toString()
+                        val time = notification[i].time
                         val header = notification[i].header
                         val message = notification[i].message
 
