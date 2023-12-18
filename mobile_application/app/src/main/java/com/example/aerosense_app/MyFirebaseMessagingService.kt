@@ -1,14 +1,14 @@
 package com.example.aerosense_app
 
-import com.google.firebase.messaging.RemoteMessage
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -16,12 +16,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private val CHANNEL_ID = "aerosense_notification_channel"
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        Log.d(TAG, "From: ${remoteMessage.from}")
+        // Log message data payload
+        if (remoteMessage.data.size > 0) {
+            Log.d(TAG, "Message data payload: " + remoteMessage.data)
+        }
 
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
-            sendNotification(it.title ?: "AeroSense Notification", it.body ?: "")
+        // Log notification payload
+        if (remoteMessage.notification != null) {
+            Log.d(TAG, "Message Notification Body: " + remoteMessage.notification!!.body)
         }
     }
     /**

@@ -35,7 +35,7 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
         return apiService.getLocationData(token)
     }
 
-    fun getUserNotifications(token: String): Call<Notification> {
+    fun getUserNotifications(token: String): Call<List<Notification>> {
         return apiService.getUserNotifications(token)
     }
 
@@ -128,12 +128,12 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
 
     fun fetchUserNotifications(
         token: String,
-        onSuccess: (Notification?) -> Unit,
+        onSuccess: (List<Notification>?) -> Unit,
         onError: (String) -> Unit
     ) {
         val call = getUserNotifications(token)
-        call.enqueue(object : Callback<Notification> {
-            override fun onResponse(call: Call<Notification>, response: Response<Notification>) {
+        call.enqueue(object : Callback<List<Notification>> {
+            override fun onResponse(call: Call<List<Notification>>, response: Response<List<Notification>>) {
                 if (response.isSuccessful) {
                     response.body()?.let { data ->
                         onSuccess(data)
@@ -143,7 +143,7 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
                 }
             }
 
-            override fun onFailure(call: Call<Notification>, t: Throwable) {
+            override fun onFailure(call: Call<List<Notification>>, t: Throwable) {
                 onError("Failure: ${t.message}")
             }
         })
