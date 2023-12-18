@@ -44,8 +44,8 @@ interface ApiService {
     @POST("/api/asthma-profile")
     fun updateAsthmaProfile(@Header("X-Access-Token") token: String, @Body settings: ProfileRequest): Call<SettingsResponse>
 
-    @GET("/api/notifications")
-    fun getUserNotifications(@Header("X-Access-Token") token: String): Call<Notification>
+    @GET("/api/get_notifications")
+    fun getUserNotifications(@Header("X-Access-Token") token: String): Call<List<Notification>>
 
     @GET("/api/history")
     fun getHistory(@Header("X-Access-Token") token: String): Call<HistoryData>
