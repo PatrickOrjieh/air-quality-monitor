@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.example.aerosense_app.api.ApiService
 import com.example.aerosense_app.network.RetrofitClient
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val viewModel: MapViewModel by viewModels()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         askPermissions()
