@@ -3,7 +3,7 @@ package com.example.aerosense_app
 import java.time.LocalDateTime
 
 data class Notification(
-    val time: Array<LocalDateTime>,
-    val header: Array<String>,
-    val message: Array<String>
+    val time: String,
+    val header: String,
+    val message: String
 )
