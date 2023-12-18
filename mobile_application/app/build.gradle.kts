@@ -123,4 +123,7 @@ dependencies {
 
     //coil for image loading
     implementation("io.coil-kt:coil-compose:2.1.0")
+
+    //depency for firebase messaging
+    implementation("com.google.firebase:firebase-messaging:23.3.1")
 }

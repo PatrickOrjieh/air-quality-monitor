@@ -161,6 +161,7 @@ class Repository(private val apiService: ApiService, private val homeDataDao: Ho
                     response.body()?.let { data ->
                         onSuccess(data)
                     }
+                    Log.d("Repository", "Location success: ${response.body()}")
                 } else {
                     Log.d("Repository", "onResponse: $response")
                     onError("Error: ${response.code()}")

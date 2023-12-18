@@ -64,9 +64,9 @@ fun Location(
                     locationList.clear()
                     locationList.addAll(locationData.map { LatLng(it.latitude, it.longitude) })
 
-                    Log.d("Check location data", "Location data: ${locationData[0].latitude}")
+                    Log.d("Check location data", "Location data: $locationData")
                 }
-                // Additional processing if needed
+                Log.d("Check Location Data Outside", "Location data: $locationData")
             },
             onError = { errorMessage ->
                 Log.d("Check Location Data", "Error: $errorMessage")
@@ -102,13 +102,23 @@ fun Location(
 //                        map.addPolygon(clusterItem.polygonOptions)
 //                    }
 
-                    // Add markers for each location in the locationList
-                    for (location in locationList) {
-                        map.addMarker {
-                            position(location)
-                            title("Bad Air Quality")
-                            snippet("Bad air quality detected here")
+                    try {
+                        if (locationList.isNotEmpty()) {
+                            Log.d("LocationList", "LocationList: $locationList")
+                            for (location in locationList) {
+                                map.addMarker {
+                                    position(location)
+                                    title("Bad Air Quality")
+                                    snippet("Bad air quality detected here")
+                                }
+                            }
+                        } else {
+                            Log.d("LocationList", "LocationList is empty")
+                            // You can take additional actions here based on your requirements
                         }
+                    } catch (e: Exception) {
+                        Log.e("LocationList", "Error adding markers: ${e.message}")
+                        // Handle the exception, log the details, and take appropriate action
                     }
 
                     map.setOnMapLoadedCallback {
