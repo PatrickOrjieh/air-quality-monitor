@@ -3,6 +3,8 @@ package com.example.aerosense_app
 import Login
 import SplashScreen
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -39,6 +41,7 @@ enum class Screen {
     Notifications
 }
 
+        @RequiresApi(Build.VERSION_CODES.O)
         @SuppressLint("ComposableDestinationInComposeScope")
         @Composable
         fun AerosenseApp(viewModel: MapViewModel){
@@ -67,11 +70,13 @@ enum class Screen {
                 state = viewModel.state.value,
                 setupClusterManager = viewModel::setupClusterManager,
                 calculateZoneViewCenter = viewModel::calculateZoneLatLngBounds,
-                navController = navController
+                navController = navController,
+                firebaseModel = firebaseModel,
+                repository = repository
             ) }
-                    composable("AsthmaProfile"){ AsthmaProfile(navController) }
+                    composable("AsthmaProfile"){ AsthmaProfile(navController, firebaseModel, repository) }
                     composable("ResetPassword") { ResetPassword(navController) }
-                    composable("History") { History(navController) }
+                    composable("History") { History(navController, firebaseModel, repository) }
                     composable("Notifications") { Notifications(navController, repository, firebaseModel) }
             }
 

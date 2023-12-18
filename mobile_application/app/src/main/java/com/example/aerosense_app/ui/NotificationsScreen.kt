@@ -45,9 +45,6 @@ data class Notifications(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Notifications(navController: NavHostController, repository: Repository, firebaseModel: FirebaseViewModel){
-    var time by remember { mutableStateOf("") }
-    var header by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
 
     NavBar(navController)
 
@@ -63,18 +60,18 @@ fun Notifications(navController: NavHostController, repository: Repository, fire
         // Use the token to make the API call
         repository.fetchUserNotifications(token,
             onSuccess = { notification ->
-                if (notification != null) {
-                    time = notification.time[0].toString()
-                }
-                if (notification != null) {
-                    header = notification.header[0]
-                }
-                if (notification != null) {
-                    message = notification.message[0]
-                }
 
-                notifications.add(Notifications(time, header, message))
+                if (notification != null) {
+                    val time = notification.time
 
+                    for (i in 0 until notification!!.time.size) {
+                        val time = notification.time[i].toString()
+                        val header = notification.header[i]
+                        val message = notification.message[i]
+
+                        notifications.add(Notifications(time, header, message))
+                    }
+                }
             },
             onError = { errorMessage ->
                 Log.d("Notification Screen", "Error: $errorMessage")
