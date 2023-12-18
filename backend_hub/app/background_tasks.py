@@ -7,17 +7,21 @@ from pubnub.enums import PNStatusCategory
 import os
 import mysql.connector
 from dotenv import load_dotenv
+from datetime import datetime
 import json
 import requests
 
 load_dotenv()
+class MySubscribeCallback(SubscribeCallback):
+    def message(self, pubnub, message):
+        # Decrypt and process message here
+        decrypted_message = message.message
+        # print(f"Received message: {decrypted_message}")
+        store_data(decrypted_message)
 
-# Define thresholds for all parameters
-TEMP_THRESHOLD = {"Good": 18, "Moderate": 25, "Bad": 30}
-HUMIDITY_THRESHOLD = {"Good": 30, "Moderate": 50, "Bad": 70}
-GAS_RESISTANCE_THRESHOLD = {"Good": 4000, "Moderate": 6000, "Bad": 10000}
-PM_2_5_THRESHOLD = {"Good": 12, "Moderate": 35.4, "Bad": 55.4}
-PM_10_THRESHOLD = {"Good": 54, "Moderate": 154, "Bad": 254}
+    def status(self, pubnub, status):
+        if status.category == PNStatusCategory.PNConnectedCategory:
+            print("Connected to PubNub")
 
 def send_fcm_notification(token, title, body):
     headers = {
@@ -32,10 +36,26 @@ def send_fcm_notification(token, title, body):
         'to': token
     }
     response = requests.post('https://fcm.googleapis.com/fcm/send', headers=headers, json=payload)
-    return response.json()
+
+    # Debugging information
+    print("FCM Response Status Code:", response.status_code)
+    print("FCM Response Content:", response.content)
+
+    try:
+        return response.json()
+    except json.JSONDecodeError:
+        print("Error parsing JSON response from FCM server.")
+        return None
+
+# Define thresholds for all parameters
+TEMP_THRESHOLD = {"Good": 18, "Moderate": 25, "Bad": 30}
+HUMIDITY_THRESHOLD = {"Good": 30, "Moderate": 50, "Bad": 70}
+GAS_RESISTANCE_THRESHOLD = {"Good": 4000, "Moderate": 6000, "Bad": 10000}
+PM_2_5_THRESHOLD = {"Good": 12, "Moderate": 35.4, "Bad": 55.4}
+PM_10_THRESHOLD = {"Good": 54, "Moderate": 154, "Bad": 254}
 
 def calculate_air_quality_score(data):
-    #calculate air quality score
+    # calculate air quality score
     temp_score = score_parameter(data['temperature'], TEMP_THRESHOLD)
     humidity_score = score_parameter(data['humidity'], HUMIDITY_THRESHOLD)
     gas_score = score_parameter(data['gas_resistance'], GAS_RESISTANCE_THRESHOLD, reverse=True)
@@ -45,12 +65,11 @@ def calculate_air_quality_score(data):
     # Calculate overall air quality score
     total_score = temp_score + humidity_score + gas_score + pm2_5_score + pm10_score
     air_quality_percentage = total_score / 5
-
     return air_quality_percentage
 
 def score_parameter(value, thresholds, reverse=False):
+    # Higher or lower values are better based on reverse flag
     if reverse:
-        # Higher values are better
         if value >= thresholds["Good"]:
             return 100
         elif value >= thresholds["Moderate"]:
@@ -58,24 +77,50 @@ def score_parameter(value, thresholds, reverse=False):
         else:
             return 40
     else:
-        # Lower values are better
         if value <= thresholds["Good"]:
             return 100
         elif value <= thresholds["Moderate"]:
             return 60
         else:
             return 40
+        
+def determine_air_quality_category(percentage):
+    if percentage >= 85:
+        return "Good"
+    elif percentage >= 60:
+        return "Moderate"
+    elif percentage >= 40:
+        return "Bad"
+    else:
+        return "Very Poor"
 
-class MySubscribeCallback(SubscribeCallback):
-    def message(self, pubnub, message):
-        # Decrypt and process message here
-        decrypted_message = message.message
-        # print(f"Received message: {decrypted_message}")
-        store_data(decrypted_message)
+def generate_notification(data, category):
+    if category == "Good":
+        heading = "Good Air Quality"
+        message = "The air quality is good. Enjoy the fresh air!"
+    elif category == "Moderate":
+        heading = "Moderate Air Quality"
+        message = "The air quality is moderate. Take necessary precautions if you have respiratory issues."
+    elif category == "Bad":
+        heading = "Poor Air Quality Alert"
+        message = "The air quality is currently poor. Please take necessary precautions."
+    elif category == "Very Poor":
+        heading = "Severe Air Quality Alert"
+        message = "The air quality is very poor! Immediate action is required to protect your health."
+    else:
+        return None, None
 
-    def status(self, pubnub, status):
-        if status.category == PNStatusCategory.PNConnectedCategory:
-            print("Connected to PubNub")
+    # Additional logic to tailor the message based on specific parameters
+    if data['temperature'] > TEMP_THRESHOLD["Bad"]:
+        message += " High temperatures can aggravate respiratory issues."
+    if data['humidity'] > HUMIDITY_THRESHOLD["Bad"]:
+        message += " High humidity levels can worsen symptoms."
+    if data['pm2_5'] > PM_2_5_THRESHOLD["Bad"]:
+        message += " Elevated PM2.5 levels detected."
+    if data['pm10'] > PM_10_THRESHOLD["Bad"]:
+        message += " Elevated PM10 levels detected."
+
+    return heading, message
 
 def store_data(data):
     # Connect to the database
@@ -88,129 +133,70 @@ def store_data(data):
         )
         cursor = connection.cursor(buffered=True)  # Use buffered cursor
         print("Connected to database")
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
-        return
 
-    try:
         # Using the modelNumber from the data, get the hubID
         cursor.execute('SELECT hubID FROM Hub WHERE modelNumber = %s', (data['modelNumber'],))
         result = cursor.fetchone()
+
         if result:
             hubID = result[0]
-            # Insert data into the database
-            query = """
-                INSERT INTO AirQualityMeasurement (
-                    hubID, PM1, PM2_5, PM10, VOC, temperature, humidity, gas_resistance, pollenCount
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (
-                hubID, data['pm1'], data['pm2_5'], data['pm10'], data['voc'], data['temperature'],
-                data['humidity'], data['gas_resistance'], 2
-            )
-            cursor.execute(query, values)
-            connection.commit()
 
-            # Calculate air quality score and determine category
-            air_quality_percentage = calculate_air_quality_score(data)
-            air_quality_category = determine_air_quality_category(air_quality_percentage)
+            # Extract timestamp from data if it exists, otherwise use current time
+            timestamp = data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-            #Use the hubID to get the userID in the Hub table and use to insert into Notification table
-            cursor.execute('SELECT userID FROM Hub WHERE hubID = %s', (hubID,))
-            result = cursor.fetchone()
-            if result:
-                userID = result[0]
-                # Generate notification
-                heading, message = generate_notification(data, air_quality_category)
-                if heading and message:
-                    query = """
-                        INSERT INTO Notification (
-                            userID, heading, message
-                        ) VALUES (%s, %s, %s)
-                    """
-                    values = (
-                        userID, heading, message
-                    )
-                    cursor.execute(query, values)
-                    connection.commit()
-                    print("Notification generated")
-                    # Send FCM notification
-                    cursor.execute('SELECT fcmToken FROM User WHERE userID = %s', (userID,))
+            # Check if a record with the same hubID and timestamp already exists
+            cursor.execute("SELECT COUNT(*) FROM AirQualityMeasurement WHERE hubID = %s AND timestamp = %s", (hubID, timestamp))
+            if cursor.fetchone()[0] == 0:
+                # Insert data into the database
+                query = """
+                    INSERT INTO AirQualityMeasurement (
+                        hubID, PM1, PM2_5, PM10, VOC, temperature, humidity, gas_resistance, pollenCount, timestamp
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (
+                    hubID, data['pm1'], data['pm2_5'], data['pm10'], data['voc'], data['temperature'],
+                    data['humidity'], data['gas_resistance'], 2, timestamp
+                )
+                cursor.execute(query, values)
+                connection.commit()
+                print("Data inserted into database")
+
+                # Calculate air quality score and determine category
+                air_quality_percentage = calculate_air_quality_score(data)
+                air_quality_category = determine_air_quality_category(air_quality_percentage)
+
+                # Generate and send notification 
+                if air_quality_category in ["Good", "Moderate", "Bad", "Very Poor"]:
+                    cursor.execute('SELECT userID FROM Hub WHERE hubID = %s', (hubID,))
                     user_result = cursor.fetchone()
                     if user_result:
-                        fcm_token = user_result[0]
-                        # Send FCM notification
-                        send_fcm_notification(fcm_token, heading, message)
-                        print("FCM Notification sent")
-                else:
-                    print("No notification generated")
+                        userID = user_result[0]
+                        cursor.execute('SELECT fcmToken FROM User WHERE userID = %s', (userID,))
+                        fcm_result = cursor.fetchone()
+                        if fcm_result:
+                            fcm_token = fcm_result[0]
+                            heading, message = generate_notification(data, air_quality_category)
+                            if heading and message:
+                                send_fcm_notification(fcm_token, heading, message)
+                                print("Notification sent to user")
+                            else:
+                                print("No notification generated due to insufficient data.")
+                        else:
+                            print("FCM token not found for user.")
+                    else:
+                        print("User not found for the given hubID.")
             else:
-                print("User not found")
+                print("Duplicate data. Skipping insertion.")
         else:
             print("Hub not found")
-        # Insert location data if present
-        if 'latitude' in data and 'longitude' in data:
-            insert_location_data(hubID, data['latitude'], data['longitude'])
-            
+
     except mysql.connector.Error as err:
         print(f"Error: {err}")
     finally:
+        # Close the cursor and connection
         cursor.close()
         connection.close()
-
-def insert_location_data(hubID, latitude, longitude):
-    try:
-        connection = mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DB_NAME')
-        )
-        cursor = connection.cursor()
-        query = """
-            INSERT INTO Location (hubID, latitude, longitude)
-            VALUES (%s, %s, %s)
-        """
-        cursor.execute(query, (hubID, latitude, longitude))
-        connection.commit()
-    except mysql.connector.Error as err:
-        print(f"Error inserting location data: {err}")
-    finally:
-        cursor.close()
-        connection.close()
-
-def determine_air_quality_category(percentage):
-    if percentage >= 85:
-        return "Good"
-    elif percentage >= 60:
-        return "Moderate"
-    elif percentage >= 40:
-        return "Bad"
-    else:
-        return "Very Poor"
-    
-def generate_notification(data, category):
-    if category in ["Bad", "Very Poor"]:
-        # Check which parameter is causing poor air quality
-        if data['temperature'] > TEMP_THRESHOLD["Bad"]:
-            heading = f"{category} Air Temperature"
-            message = "High temperatures can aggravate asthma symptoms. It's advised to stay in cool, air-conditioned environments and stay hydrated. Avoid outdoor activities during peak heat hours, and always carry your inhaler. Stay safe!"
-        elif data['humidity'] > HUMIDITY_THRESHOLD["Bad"]:
-            heading = f"{category} Humidity"
-            message = "High humidity levels can worsen asthma symptoms. Try to stay indoors in air-conditioned spaces, keep well-hydrated, and avoid strenuous outdoor activities. Always have your asthma medication handy for any emergencies. Take care!"
-        elif data['pm2_5'] > PM_2_5_THRESHOLD["Bad"]:
-            heading = f"{category} PM2.5 Particles"
-            message = "Stay indoors as much as possible, use an air purifier if available, and avoid outdoor exercise. Always keep your asthma medication within reach. Stay safe and take care of your respiratory health"
-        elif data['pm10'] > PM_10_THRESHOLD["Bad"]:
-            heading = f"{category} PM10 Particles"
-            message = "It's best to stay indoors, especially during times of peak air pollution. Use air purifiers to maintain indoor air quality and avoid physical exertion outdoors. Ensure your asthma medication is easily accessible for immediate use. Take care and protect your lungs."
-        else:
-            heading = f"{category} Air Quality"
-            message = "The Air Quality is bad. It's best to stay indoors, especially during times of peak air pollution. Use air purifiers to maintain indoor air quality and avoid physical exertion outdoors. Ensure your asthma medication is easily accessible for immediate use. Take care and protect your lungs."
-
-        return heading, message
-    return None, None
-
+        
 def start_pubnub_listener(app):
     with app.app_context():
         print("Initializing PubNub Listener")
