@@ -117,9 +117,9 @@ fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewM
     )
     {
         Log.d("Check main trigger", "Main trigger: $mainTrigger")
-        if(mainTrigger != ""){
+       // if(mainTrigger != ""){
             profileSelectionDropDown(selection = selectionTrigger, mainTrigger, asthmaSeverity, true, repository = repository, token = token, onItemSelected = { mainTrigger = it })
-        }
+       // }
     }
 
     Text(
@@ -137,9 +137,9 @@ fun AsthmaProfile(navController: NavHostController, firebaseModel: FirebaseViewM
     )
     {
         Log.d("Check asthma severity", "Asthma severity: $asthmaSeverity")
-        if(asthmaSeverity != "") {
+        //if(asthmaSeverity != "") {
             profileSelectionDropDown(selection = selectionSeverity, mainTrigger, asthmaSeverity, false, repository = repository, token = token, onItemSelected = { asthmaSeverity = it })
-        }
+        //}
     }
 
 }
