@@ -171,6 +171,17 @@ def store_data(data):
                 connection.commit()
                 print("Data inserted into database")
 
+                # Insert location data into the Location table if latitude and longitude are present
+                if 'latitude' in data and 'longitude' in data:
+                    location_query = """
+                        INSERT INTO Location (hubID, latitude, longitude)
+                        VALUES (%s, %s, %s)
+                    """
+                    location_values = (hubID, data['latitude'], data['longitude'])
+                    cursor.execute(location_query, location_values)
+                    connection.commit()
+                    print("Location data inserted into database")
+
                 # Calculate air quality score and determine category
                 air_quality_percentage = calculate_air_quality_score(data)
                 air_quality_category = determine_air_quality_category(air_quality_percentage)
