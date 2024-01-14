@@ -7,6 +7,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     firebaseUID = db.Column(db.String(255), nullable=False)
+    token = db.Column(db.Text, nullable=False)
+    access_level = db.Column(db.Integer, default=0)
     fcmToken = db.Column(db.String(255), nullable=False)
     createdAt = db.Column(db.DateTime)
     updatedAt = db.Column(db.DateTime)

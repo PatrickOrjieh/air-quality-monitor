@@ -33,7 +33,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Insert new user into MySQL database
-        cursor.execute('INSERT INTO User (name, email, firebaseUID, fcmToken) VALUES (%s, %s, %s, %s)', (name, email, uid, fcm_token))
+        cursor.execute('INSERT INTO User (name, email, firebaseUID, fcmToken, access_level) VALUES (%s, %s, %s, %s)', (name, email, uid, fcm_token,2))
         mysql.connection.commit()
         user_id = cursor.lastrowid
 
