@@ -7,7 +7,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     firebaseUID = db.Column(db.String(255), nullable=False)
-    token = db.Column(db.Text, nullable=False)
+    read_token = db.Column(db.Text, nullable=False)
+    write_token = db.Column(db.Text, nullable=False)
     access_level = db.Column(db.Integer, default=0)
     fcmToken = db.Column(db.String(255), nullable=False)
     createdAt = db.Column(db.DateTime)
@@ -22,6 +23,9 @@ class Hub(db.Model):
     hubID = db.Column(db.Integer, primary_key=True)
     modelNumber = db.Column(db.String(255), nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey('User.userID'), nullable=False)
+    read_token = db.Column(db.Text, nullable=False)
+    write_token = db.Column(db.Text, nullable=False)
+    access_level = db.Column(db.Integer, default=0)
     batteryLevel = db.Column(db.Integer, nullable=False)
 
     # Relationship

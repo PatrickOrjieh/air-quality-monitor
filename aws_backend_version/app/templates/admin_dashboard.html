@@ -15,7 +15,11 @@
             </form>
         </div>
         <h2 class="my-4">Admin Dashboard</h2>
-        <table class="table">
+        <div class="btn-group" role="group" aria-label="Dashboard Toggle">
+            <button type="button" class="btn btn-primary" id="userDashboardBtn" style="outline: none;">User Dashboard</button>
+            <button type="button" class="btn btn-secondary" id="hubDashboardBtn" style="outline: none;">Hub Dashboard</button>
+        </div>
+        <table class="table" id="userDashboard">
             <thead>
                 <tr>
                     <th scope="col">#</th>
@@ -32,7 +36,7 @@
                     <th scope="row">{{ loop.index }}</th>
                     <td>{{ user.email }}</td>
                     <td>{{ user.access_level }}</td>
-                    <form action="{{ url_for('update_access') }}" method="post">
+                    <form action="{{ url_for('update_access_user') }}" method="post">
                         <td>
                             <input type="checkbox" name="read" value="1" {% if user.access_level >= 1 %} checked {% endif %}>
                         </td>
@@ -48,7 +52,55 @@
                 {% endfor %}
             </tbody>            
         </table>
+
+        <!-- Table for the hubs -->
+        <table class="table" id="hubDashboard" style="display: none;">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Hub-Device</th>
+                    <th scope="col">User Email</th>
+                    <th scope="col">Access Level</th>
+                    <th scope="col">Read</th>
+                    <th scope="col">Write</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hub in hubs %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ hub.modelNumber }}</td>
+                    <td>{{ hub.user.email }}</td>
+                    <td>{{ hub.access_level }}</td>
+                    <form action="{{ url_for('update_access_hub') }}" method="post">
+                        <td>
+                            <input type="checkbox" name="read" value="1" {% if hub.access_level >= 1 %} checked {% endif %}>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="write" value="2" {% if hub.access_level == 2 %} checked {% endif %}>
+                        </td>
+                        <td>
+                            <input type="hidden" name="hub_id" value="{{ hub.hubID }}">
+                            <button type="submit" class="btn btn-sm btn-primary" style="background-color: rgb(16, 94, 124); color: white; outline: none; box-shadow: none;">Grant</button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>            
+        </table>
     </div>
+    <script>
+        document.getElementById('userDashboardBtn').addEventListener('click', function() {
+            document.getElementById('hubDashboard').style.display = 'none';
+            document.getElementById('userDashboard').style.display = 'table';
+        });
+        
+        document.getElementById('hubDashboardBtn').addEventListener('click', function() {
+            document.getElementById('userDashboard').style.display = 'none';
+            document.getElementById('hubDashboard').style.display = 'table';
+        });
+    </script>        
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
