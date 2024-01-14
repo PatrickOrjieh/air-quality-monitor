@@ -8,9 +8,6 @@ import re
 cred = credentials.Certificate("./aerosense.json")
 firebase_admin.initialize_app(cred)
 
-@app.route('/')
-def index():
-    return "Hello, World!"
 
 @app.route('/api/register', methods=['POST'])
 def register_user():

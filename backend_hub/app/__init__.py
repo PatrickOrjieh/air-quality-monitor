@@ -30,5 +30,6 @@ from app.api import location
 from app.api import profile
 from app.api import history
 from app.api import notification
+from app.api import web
 
 start_background_task(app)
