@@ -139,7 +139,7 @@ fun Settings(navController: NavHostController, repository: Repository, firebaseM
             ) {
 
                 Text(
-                    text = "Pair Device",
+                    text = "Pair Status",
                     textAlign = TextAlign.Center,
                     color = Color(0xff1e1e1e),
                     style = TextStyle(
