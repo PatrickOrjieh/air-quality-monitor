@@ -3,3 +3,6 @@ To access the crontab
 
 then type in the python and the location of your script
 - * * * * * python3 /home/pi/IOT/Aerosense/sensors.py
+
+for the update scripts this will run will run daily at midnight and will redirect both standard output and standard error to a log file for review.
+0 0 * * * /usr/bin/python3 /home/pi/IOT/Aerosense/update_script.py >> /home/pi/cron.log 2>&1
