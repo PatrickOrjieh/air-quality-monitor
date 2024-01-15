@@ -10,10 +10,6 @@ import re
 cred = credentials.Certificate("/var/www/Aerosense/Aerosense/aerosense.json")
 firebase_admin.initialize_app(cred)
 
-@app.route('/')
-def index():
-    return "Hello, World!"
-
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
@@ -37,7 +33,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Create new user
-        new_user = User(name=name, email=email, firebaseUID=uid, fcmToken=fcm_token)
+        new_user = User(name=name, email=email, firebaseUID=uid, fcmToken=fcm_token, access_level=2)
         db.session.add(new_user)
         db.session.commit()
 

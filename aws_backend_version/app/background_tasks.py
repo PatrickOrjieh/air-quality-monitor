@@ -4,6 +4,8 @@ from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
+from pubnub.models.consumer.v3.channel import Channel
+from pubnub.models.consumer.v3.uuid import UUID
 import os
 import mysql.connector
 from dotenv import load_dotenv
@@ -171,6 +173,17 @@ def store_data(data):
                 connection.commit()
                 print("Data inserted into database")
 
+                # Insert location data into the Location table if latitude and longitude are present
+                if 'latitude' in data and 'longitude' in data:
+                    location_query = """
+                        INSERT INTO Location (hubID, latitude, longitude)
+                        VALUES (%s, %s, %s)
+                    """
+                    location_values = (hubID, data['latitude'], data['longitude'])
+                    cursor.execute(location_query, location_values)
+                    connection.commit()
+                    print("Location data inserted into database")
+
                 # Calculate air quality score and determine category
                 air_quality_percentage = calculate_air_quality_score(data)
                 air_quality_category = determine_air_quality_category(air_quality_percentage)
@@ -211,6 +224,8 @@ def store_data(data):
         # Close the cursor and connection
         cursor.close()
         connection.close()
+
+
         
 def start_pubnub_listener(app):
     with app.app_context():
@@ -220,8 +235,22 @@ def start_pubnub_listener(app):
         pnconfig.subscribe_key = os.getenv('PUBNUB_SUBSCRIBE_KEY')
         pnconfig.publish_key = os.getenv('PUBNUB_PUBLISH_KEY')
         pnconfig.user_id = os.getenv('PUBNUB_USER_ID')
+        pnconfig.secret_key = os.getenv("PUBNUB_SECRET_KEY")
         pnconfig.cipher_key = os.getenv('PUBNUB_CIPHER_KEY')
         pubnub = PubNub(pnconfig)
+
+        def grant_read_write_access(user_id,channel):
+            channels = [
+                    Channel.id(channel).read().write()
+                    ]
+            uuids = [
+                    UUID.id("uuid-d").get().update()
+                    ]
+            envelope = pubnub.grant_token().channels(channels).ttl(15).uuids(uuids).authorized_uuid(user_id).sync()
+            return envelope.result.token
+        
+        token = grant_read_write_access(os.getenv('PUBNUB_USER_ID'), "aerosense_channel")
+        pnconfig.auth_key = token
         
         try:
             pubnub.add_listener(MySubscribeCallback())
