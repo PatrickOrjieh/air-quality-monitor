@@ -13,7 +13,7 @@ ADMIN_PASSWORD_HASH = generate_password_hash('8GZsOo&mF@@kf#Kh')
 
 @app.route('/')
 def index():
-    return "Hello World!"
+    return render_template('index.html')
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def login():
@@ -52,7 +52,11 @@ def request_token():
     
     write_token = hub.write_token
 
-    writeToken = get_or_refresh_token(write_token)
+    print(write_token)
+
+    hub_id = hub.hubID
+
+    writeToken = get_or_refresh_token(hub_id, write_token)
     return jsonify({"token": writeToken}), 200
 
 @app.route('/update_access_user', methods=['POST'])
@@ -84,13 +88,15 @@ def update_access_user():
 
     return redirect(url_for('admin_dashboard'))
 
-def get_or_refresh_token(token):
-    timestamp, ttl, uuid, read, write = pb.parse_token(token)
+def get_or_refresh_token(user_id,token):
+    timestamp, ttl, uuid, read, write = pb.parse_token(token, "aerosense_channel")
     current_time = time.time()
     if (timestamp + (ttl*60)) - current_time > 0:
+        print("token still valid for " + str((timestamp + (ttl*60)) - current_time) + " seconds")
         return token
     else:
-        message, new_token = grant_access(uuid, read, write)
+        message, new_token = grant_access(user_id, read, write)
+        print("token expired, new token: " + new_token)
         return new_token
 
 def grant_access(hub_id, read, write):
@@ -100,7 +106,7 @@ def grant_access(hub_id, read, write):
     
     model_number = hub.modelNumber
 
-    if read and write:
+    if write:
         new_token = pb.grant_read_write_access(model_number, "aerosense_channel")
         hub.write_token = new_token
         hub.read_token = new_token
@@ -108,9 +114,13 @@ def grant_access(hub_id, read, write):
         new_token = pb.grant_read_access(model_number, "aerosense_channel")
         hub.read_token = new_token
         hub.write_token = None
+    elif not read and not write:
+        new_token = None
+        hub.write_token = None
+        hub.read_token = None
     else:
-        if hub.write_token:
-            pb.revoke_access(hub.write_token)
+        # if hub.write_token:
+        #     pb.revoke_access(hub.write_token)
         hub.write_token = None
         hub.read_token = None
         return "Access revoked", None
