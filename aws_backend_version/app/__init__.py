@@ -24,6 +24,11 @@ from app.api import user
 from app.api import data
 from app.api import hub
 from app.api import pollen
+from app.api import location
+from app.api import profile
+from app.api import history
+from app.api import notification
+from app.api import web
 
 # Start background tasks if needed
 from .background_tasks import start_background_task

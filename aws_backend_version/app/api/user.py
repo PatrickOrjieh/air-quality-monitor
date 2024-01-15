@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app import app, db
-from app.models import User, Hub, UserSetting
+from app.models import User, Hub, UserSetting, AsthmaProfile
 from werkzeug.security import generate_password_hash
 import firebase_admin
 from firebase_admin import auth, credentials
@@ -10,15 +10,12 @@ import re
 cred = credentials.Certificate("/var/www/Aerosense/Aerosense/aerosense.json")
 firebase_admin.initialize_app(cred)
 
-@app.route('/')
-def index():
-    return "Hello, World!"
-
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
     token = data.get('firebaseToken')
     model_number = data.get('modelNumber')
+    fcm_token = data.get('fcmToken')
 
     if not token or not model_number:
         return jsonify({"error": "Missing required fields"}), 400
@@ -36,7 +33,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Create new user
-        new_user = User(name=name, email=email, firebaseUID=uid)
+        new_user = User(name=name, email=email, firebaseUID=uid, fcmToken=fcm_token, access_level=2)
         db.session.add(new_user)
         db.session.commit()
 
@@ -48,6 +45,11 @@ def register_user():
         #insert into user_settings the default settings
         new_user_settings = UserSetting(userID=new_user.userID, notificationFrequency="only when critical", vibration=True, sound=True)
         db.session.add(new_user_settings)
+        db.session.commit()
+
+        # Insert default asthma profile
+        new_asthma_profile = AsthmaProfile(userID=new_user.userID, personalTrigger="Fumes", asthmaCondition="Mild intermittent asthma")
+        db.session.add(new_asthma_profile)
         db.session.commit()
 
         return jsonify({"message": "User registered successfully", "userID": new_user.userID}), 201

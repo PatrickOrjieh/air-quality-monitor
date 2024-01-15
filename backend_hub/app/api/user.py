@@ -8,17 +8,15 @@ import re
 cred = credentials.Certificate("./aerosense.json")
 firebase_admin.initialize_app(cred)
 
-@app.route('/')
-def index():
-    return "Hello, World!"
 
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
     token = data.get('firebaseToken')
     model_number = data.get('modelNumber')
+    fcm_token = data.get('fcmToken')
 
-    if not token or not model_number:
+    if not token or not model_number or not fcm_token:
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
@@ -26,7 +24,7 @@ def register_user():
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
         email = decoded_token['email']
-        name = decoded_token.get('name', email)  # Use email as name if name not provided
+        name = decoded_token.get('name', email)
 
         # Check if user already exists
         cursor = mysql.connection.cursor()
@@ -35,7 +33,7 @@ def register_user():
             return jsonify({"error": "User already exists"}), 400
 
         # Insert new user into MySQL database
-        cursor.execute('INSERT INTO User (name, email, firebaseUID) VALUES (%s, %s, %s)', (name, email, uid))
+        cursor.execute('INSERT INTO User (name, email, firebaseUID, fcmToken, access_level) VALUES (%s, %s, %s, %s)', (name, email, uid, fcm_token,2))
         mysql.connection.commit()
         user_id = cursor.lastrowid
 
@@ -47,6 +45,12 @@ def register_user():
         # Insert default user settings
         cursor = mysql.connection.cursor()
         cursor.execute('INSERT INTO UserSetting (userID, notificationFrequency, vibration, sound) VALUES (%s, %s, %s, %s)', (user_id, "only when critical", True, True))
+        mysql.connection.commit()
+        cursor.close()
+
+        # Insert default asthma profile
+        cursor = mysql.connection.cursor()
+        cursor.execute('INSERT INTO AsthmaProfile (userID, personalTrigger, asthmaCondition) VALUES (%s, %s, %s)', (user_id, "Fumes", "Mild intermittent asthma"))
         mysql.connection.commit()
         cursor.close()
 
