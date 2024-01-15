@@ -8,6 +8,7 @@ from pubnub.pubnub import PubNub
 from pubnub.pnconfiguration import PNConfiguration
 from dotenv import load_dotenv
 import os
+import requests
 
 # Load environment variables
 load_dotenv()
@@ -16,7 +17,7 @@ load_dotenv()
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = os.getenv('PUBNUB_SUBSCRIBE_KEY')
 pnconfig.publish_key = os.getenv('PUBNUB_PUBLISH_KEY')
-pnconfig.user_id = "aerosense-model-T5"
+pnconfig.user_id = "A7"
 pnconfig.cipher_key = os.getenv('PUBNUB_CIPHER_KEY')
 pubnub = PubNub(pnconfig)
 
@@ -101,13 +102,13 @@ def get_gps_data(serial_port, timeout=60):
         elapsed_time = time.time() - start_time
         if elapsed_time > timeout:
             print("GPS timeout reached. No valid data.")
-            return None, None
+            return None, None  # Return None values if timeout is reached
         gps_data = serial_port.readline().decode('utf-8').strip()
         if gps_data:
             gps_parsed = parse_gps_data(gps_data)
             if gps_parsed:
                 print(f"GPS Data Acquired: Latitude: {gps_parsed[0]}, Longitude: {gps_parsed[1]}")
-                return gps_parsed
+                return gps_parsed  # Return valid data
         time.sleep(0.5) 
 
 # PubNub callback class
@@ -153,6 +154,18 @@ def my_publish_callback(envelope, status):
         print("Message published successfully")
     else:
         print("Error in publishing message")
+        
+def request_pubnub_token(model_number):
+    try:
+        response = requests.post('https://aerosense.life/api/request_token', json={'model_number': model_number})
+        if response.status_code == 200:
+            return response.json()['token']
+        else:
+            print("Failed to get token. Status Code:", response.status_code)
+            return None
+    except Exception as e:
+        print("Error requesting token:", e)
+        return None
 
 def main():
     try:
@@ -162,6 +175,7 @@ def main():
             humidity = None
             gas_resistance = None
             voc_level = None
+            pm1 = None
             pm2_5 = None
             pm10 = None
             lat = None
@@ -179,23 +193,25 @@ def main():
             if data:
                 pms_data = parse_pms7003_data(data)
                 if pms_data:
-                    pm2_5, pm10 = pms_data[1], pms_data[2]
+                    pm1,pm2_5, pm10 = pms_data[0],pms_data[1], pms_data[2]
 
             # Check air quality before attempting to read GPS
             if None not in [temp, humidity, gas_resistance, pm2_5, pm10]:
                 if check_air_quality(temp, humidity, gas_resistance, pm2_5, pm10):
                     print("Poor air quality detected, waiting for GPS data.")
-                    lat, lon = get_gps_data(ser_gps)
+                    #lat, lon = get_gps_data(ser_gps)
+                    lat, lon = 53.9814264,-6.3912109
 
                     if lat is not None and lon is not None:
                         print(f"GPS Data: Latitude: {lat}, Longitude: {lon}")
                         # Construct data payload
                         data = {
-                            'modelNumber': "T5",
+                            'modelNumber': "A7",
                             'temperature': temp,
                             'humidity': humidity,
                             'gas_resistance': gas_resistance,
                             'voc': voc_level,
+                            'pm1': pm1,
                             'pm2_5': pm2_5,
                             'pm10': pm10,
                             'latitude': lat,
@@ -206,8 +222,17 @@ def main():
 
                     print(f"Data: {data}")
                     trigger_alert()
-                    # Publish to PubNub
-                    pubnub.publish().channel('aerosense_channel').message(data).pn_async(my_publish_callback)
+                    model_number = "A7"  # Example model number
+                    token = request_pubnub_token(model_number)
+                    if token:
+                        print(token)
+                        pnconfig.auth_key = token  # Apply the token to PubNub configuration
+                        # Publish to PubNub
+                        pubnub.publish().channel('aerosense_channel').message(data).pn_async(my_publish_callback)
+                    else:
+                        print("No valid PubNub token received. Exiting.")
+                        return
+                    
             else:
                 print("Waiting for valid sensor data...")
 
